@@ -21,7 +21,6 @@ const ⊗ = kron
 
 # Grid
 include("grid/grid.jl")
-include("grid/get_dimension.jl")
 include("grid/stretched_grid.jl")
 include("grid/cosine_grid.jl")
 include("grid/max_size.jl")
@@ -129,15 +128,12 @@ include("postprocess/save_vtk.jl")
 # Reexport
 export @pack!
 
-# Grid
-export get_dimension
-
 # Force
 export SteadyBodyForce, UnsteadyBodyForce
 
 # Models
 export LaminarModel
-export NoRegConvectionModel, C2ConvectionModel, C4ConvectionModel, LerayConvectionModel
+export NoRegConvectionModel
 
 # Processors
 export AbstractProcessor, Logger, StateObserver, VTKWriter

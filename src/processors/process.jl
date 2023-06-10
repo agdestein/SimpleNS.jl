@@ -21,21 +21,15 @@ function process!(writer::VTKWriter, stepper)
     (; grid) = setup
     (; xp, yp, zp) = grid
 
-    N = get_dimension(grid)
-    if N == 2
-        coords = (xp, yp)
-    elseif N == 3
-        coords = (xp, yp, zp)
-    end
+    coords = (xp, yp)
 
     tformat = replace(string(t), "." => "p")
     vtk_grid("$(writer.dir)/$(writer.filename)_t=$tformat", coords...) do vtk
         vels = get_velocity(V, t, setup)
-        if N == 2
-            # ParaView prefers 3D vectors. Add zero z-component.
-            wp = zeros(size(vels[1]))
-            vels = (vels..., wp)
-        end
+
+        # ParaView prefers 3D vectors. Add zero z-component.
+        wp = zeros(size(vels[1]))
+        vels = (vels..., wp)
         vtk["velocity"] = vels
         vtk["pressure"] = p
         writer.pvd[t] = vtk
