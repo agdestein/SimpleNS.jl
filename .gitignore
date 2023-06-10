@@ -1,0 +1,15 @@
+*.jl.*.cov
+*.jl.cov
+*.jl.mem
+*Manifest.toml
+/docs/build/
+/docs/src/generated/
+*output/
+*notebooks/
+examples/test.jl
+
+# Vim swap
+*.swp
+
+# Mac OS
+*.DS_Store
