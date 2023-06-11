@@ -60,7 +60,6 @@ include("operators/operator_divergence.jl")
 include("operators/operator_interpolation.jl")
 include("operators/operator_postprocessing.jl")
 include("operators/operator_regularization.jl")
-include("operators/operator_viscosity.jl")
 
 # Pressure solvers
 include("solvers/pressure/pressure_solvers.jl")
@@ -68,11 +67,9 @@ include("solvers/pressure/pressure_poisson.jl")
 include("solvers/pressure/pressure_additional_solve.jl")
 
 # Time steppers
-include("momentum/momentumcache.jl")
 include("time_steppers/methods.jl")
 include("time_steppers/tableaux.jl")
 include("time_steppers/nstage.jl")
-include("time_steppers/time_stepper_caches.jl")
 include("time_steppers/time_steppers.jl")
 include("time_steppers/change_time_stepper.jl")
 include("time_steppers/step.jl")
@@ -93,12 +90,10 @@ include("processors/real_time_plot.jl")
 # Momentum equation
 include("momentum/bodyforce.jl")
 include("momentum/compute_conservation.jl")
-include("momentum/check_symmetry.jl")
 include("momentum/convection_components.jl")
 include("momentum/convection.jl")
 include("momentum/diffusion.jl")
 include("momentum/momentum.jl")
-include("momentum/strain_tensor.jl")
 
 # Problems
 include("problems/problems.jl")
@@ -110,7 +105,6 @@ include("solvers/solve.jl")
 include("solvers/solve_animate.jl")
 
 # Utils
-include("utils/filter_convection.jl")
 include("utils/get_lims.jl")
 
 # Postprocess

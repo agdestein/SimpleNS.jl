@@ -3,10 +3,7 @@
 
 Compute streamfunction ``\\psi`` from a Poisson equation ``\\nabla^2 \\psi = -\\omega``.
 """
-function get_streamfunction end
-
-# 2D version
-function get_streamfunction(V, t, setup::Setup{T,2}) where {T}
+function get_streamfunction(V, t, setup)
     (; grid, operators, boundary_conditions) = setup
     (; u_bc, v_bc) = boundary_conditions
     (; indu, indv, Nux_in, Nvx_in, Nx, Ny) = grid
@@ -100,9 +97,4 @@ function get_streamfunction(V, t, setup::Setup{T,2}) where {T}
     ψ = -Aψ \ (ω_flat + yAψ)
 
     reshape(ψ, size(ω)...)
-end
-
-# 3D version
-function get_streamfunction(V, t, setup::Setup{T,3}) where {T}
-    error("Not implemented")
 end

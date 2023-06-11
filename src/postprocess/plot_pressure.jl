@@ -3,10 +3,7 @@
 
 Plot pressure.
 """
-function plot_pressure end
-
-# 2D version
-function plot_pressure(setup::Setup{T,2}, p; kwargs...) where {T}
+function plot_pressure(setup, p; kwargs...)
     (; Nx, Ny, Npx, Npy, xp, yp, xlims, ylims) = setup.grid
 
     # Reshape
@@ -34,20 +31,4 @@ function plot_pressure(setup::Setup{T,2}, p; kwargs...) where {T}
     # save("output/pressure.png", fig, pt_per_unit = 2)
 
     fig
-end
-
-# 3D version
-function plot_pressure(setup::Setup{T,3}, p; kwargs...) where {T}
-    (; Nx, Ny, Nz, Npx, Npy, Npz, xp, yp, zp) = setup.grid
-
-    # Reshape
-    p = reshape(p, Npx, Npy, Npz)
-
-    # Levels
-    μ, σ = mean(p), std(p)
-    levels = LinRange(μ - 5σ, μ + 5σ, 10)
-
-    contour(xp, yp, zp, p; levels, kwargs...)
-
-    # save("output/pressure.png", fig, pt_per_unit = 2)
 end

@@ -47,7 +47,7 @@ function solve(
     (; yM) = bc_vectors
 
     # Residual of momentum equations at start
-    momentum!(F, ∇F, V, V, p, t, setup, momentum_cache; bc_vectors)
+    F, ∇F = momentum(V, V, p, t, setup; bc_vectors)
     maxres = maximum(abs.(F))
 
     println("Initial momentum residual = $maxres")
@@ -66,15 +66,12 @@ function solve(
             newton_factor = true
         end
 
-        momentum!(
-            F,
-            ∇F,
+        F, ∇F = momentum(
             V,
             V,
             p,
             t,
-            setup,
-            momentum_cache;
+            setup;
             bc_vectors,
             get_jacobian = true,
             newton_factor,
@@ -97,7 +94,7 @@ function solve(
         # Calculate mass, momentum and energy
         # maxdiv, umom, vmom, k = compute_conservation(V, t, setup; bc_vectors)
 
-        momentum!(F, ∇F, V, V, p, t, setup, momentum_cache; bc_vectors)
+        F, ∇F = momentum(V, V, p, t, setup; bc_vectors)
         maxres = maximum(abs.(F))
 
         println(": momentum residual = $maxres")

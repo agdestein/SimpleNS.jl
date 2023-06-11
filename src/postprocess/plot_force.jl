@@ -3,10 +3,7 @@
 
 Plot body force.
 """
-function plot_force end
-
-# 2D version
-function plot_force(setup::Setup{T,2}, t; kwargs...) where {T}
+function plot_force(setup, t; kwargs...)
     (; grid, force) = setup
     (; xp, yp, xlims, ylims) = grid
     (; xu, yu, zu, indu, xlims, ylims) = grid
@@ -27,25 +24,4 @@ function plot_force(setup::Setup{T,2}, t; kwargs...) where {T}
     cf = contourf!(ax, xp, yp, Fp; extendlow = :auto, extendhigh = :auto, levels, kwargs...)
     Colorbar(fig[1, 2], cf)
     fig
-end
-
-# 3D version
-function plot_force(setup::Setup{T,3}, t; kwargs...) where {T}
-    (; grid, force) = setup
-    (; xu, yu, zu, indu) = grid
-    (; F) = force
-
-    # Get force at pressure points
-    # up, vp, wp = get_velocity(V, t, setup)
-    # qp = map((u, v, w) -> √sum(u^2 + v^2 + w^2), up, vp, wp)
-    Fp = reshape(F[indu], size(xu))
-    # TODO: norm of F instead of Fu
-    xp, yp, zp = xu[:, 1, 1], yu[1, :, 1], zu[1, 1, :]
-
-    # Levels
-    μ, σ = mean(Fp), std(Fp)
-    levels = LinRange(μ - 3σ, μ + 3σ, 10)
-
-    # contour(xp, yp, zp, Fp; levels, kwargs...)
-    contour(xp, yp, zp, Fp)
 end

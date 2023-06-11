@@ -256,9 +256,6 @@ function Operators(grid::Grid{T}, boundary_conditions, viscosity_model) where {T
     # Regularization modelling - this changes the convective term
     op_reg = operator_regularization(grid, op_con)
 
-    # Classical turbulence modelling via the diffusive term
-    op_vis = operator_viscosity(viscosity_model, grid, boundary_conditions)
-
     # Post-processing
     op_pos = operator_postprocessing(grid, boundary_conditions)
 

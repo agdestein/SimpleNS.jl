@@ -3,10 +3,7 @@
 
 Plot streamfunction.
 """
-function plot_streamfunction end
-
-# 2D version
-function plot_streamfunction(setup::Setup{T,2}, V, t; kwargs...) where {T}
+function plot_streamfunction(setup, V, t; kwargs...)
     (; grid, boundary_conditions) = setup
     (; x, y, xlims, ylims) = grid
 
@@ -50,9 +47,4 @@ function plot_streamfunction(setup::Setup{T,2}, V, t; kwargs...) where {T}
     # save("output/streamfunction.png", fig, pt_per_unit = 2)
 
     fig
-end
-
-# 3D version
-function plot_streamfunction(setup::Setup{T,3}, V, t; kwargs...) where {T}
-    error("Not implemented (3D)")
 end

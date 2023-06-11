@@ -3,9 +3,6 @@
 
 Plot vorticity field.
 """
-function plot_vorticity end
-
-# 2D version
 function plot_vorticity(setup, V, t; kwargs...)
     (; grid, boundary_conditions) = setup
     (; x, y, xlims, ylims) = grid
@@ -42,35 +39,4 @@ function plot_vorticity(setup, V, t; kwargs...)
     # save("output/vorticity.png", fig, pt_per_unit = 2)
 
     fig
-end
-
-# 3D version
-function plot_vorticity(setup::Setup{T,3}, V, t; kwargs...) where {T}
-    (; grid, boundary_conditions) = setup
-    (; x, y, z) = grid
-
-    if all(
-        ==(:periodic),
-        (
-            boundary_conditions.u.x[1],
-            boundary_conditions.v.y[1],
-            boundary_conditions.w.z[1],
-        ),
-    )
-        xω = x
-        yω = y
-        zω = z
-    else
-        xω = x[2:(end-1)]
-        yω = y[2:(end-1)]
-        zω = z[2:(end-1)]
-    end
-
-    ω = get_vorticity(V, t, setup)
-
-    # Levels
-    μ, σ = mean(ω), std(ω)
-    levels = LinRange(μ - 3σ, μ + 3σ, 10)
-
-    contour(xω, yω, zω, ω; levels, kwargs...)
 end

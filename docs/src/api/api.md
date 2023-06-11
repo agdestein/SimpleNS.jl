@@ -53,22 +53,13 @@ LerayConvectionModel
 ## Momentum
 
 ```@docs
-MomentumCache
 bodyforce
-bodyforce!
-check_symmetry
 compute_conservation
 convection
-convection!
 convection_components
-convection_components!
 diffusion
-diffusion!
 momentum
-momentum!
 momentum_allstage
-momentum_allstage!
-strain_tensor
 turbulent_K
 turbulent_viscosity
 ```
@@ -88,7 +79,6 @@ operator_interpolation
 operator_postprocessing
 operator_regularization
 operator_turbulent_diffusion
-operator_viscosity
 ```
 
 ## Postprocess
@@ -150,9 +140,7 @@ DirectPressureSolver
 CGPressureSolver
 FourierPressureSolver
 pressure_additional_solve
-pressure_additional_solve!
 pressure_poisson
-pressure_poisson!
 ```
 
 ## Time steppers
@@ -167,28 +155,18 @@ ImplicitRungeKuttaMethod
 
 TimeStepper
 
-AbstractODEMethodCache
-ExplicitRungeKuttaCache
-ImplicitRungeKuttaCache
-AdamsBashforthCrankNicolsonCache
-OneLegCache
-
 change_time_stepper
 isexplicit
 lambda_conv_max
 lambda_diff_max
 needs_startup_method
 nstage
-ode_method_cache
 runge_kutta_method
 step
-step!
 ```
 
 ## Utils
 
 ```@docs
-filter_convection
-filter_convection!
 get_lims
 ```

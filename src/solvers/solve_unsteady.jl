@@ -8,7 +8,6 @@
         n_adapt_Δt = 1,
         nstartup = 1,
         method_startup = nothing,
-        inplace = false,
         processors = [],
     )
 
@@ -33,7 +32,6 @@ function solve(
     n_adapt_Δt = 1,
     nstartup = 1,
     method_startup = nothing,
-    inplace = false,
     processors = [],
 )
     (; setup, V₀, p₀, tlims) = problem
@@ -52,11 +50,6 @@ function solve(
         method_use = method_startup
     else
         method_use = method
-    end
-
-    if inplace
-        cache = ode_method_cache(method_use, setup)
-        momentum_cache = MomentumCache(setup)
     end
 
     stepper = TimeStepper(;
@@ -85,9 +78,6 @@ function solve(
         if stepper.n == nstartup && needs_startup_method(method)
             println("n = $(stepper.n): switching to primary ODE method ($method)")
             stepper = change_time_stepper(stepper, method)
-            if inplace
-                cache = ode_method_cache(method, setup)
-            end
         end
 
         if isadaptive
@@ -101,11 +91,7 @@ function solve(
         end
 
         # Perform a single time step with the time integration method
-        if inplace
-            stepper = step!(stepper, Δt; cache, momentum_cache, bc_vectors)
-        else
-            stepper = step(stepper, Δt; bc_vectors)
-        end
+        stepper = step(stepper, Δt; bc_vectors)
 
         # Process iteration results with each processor
         for ps ∈ processors

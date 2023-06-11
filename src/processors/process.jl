@@ -19,7 +19,7 @@ end
 function process!(writer::VTKWriter, stepper)
     (; setup, V, p, t) = stepper
     (; grid) = setup
-    (; xp, yp, zp) = grid
+    (; xp, yp) = grid
 
     coords = (xp, yp)
 

@@ -209,7 +209,7 @@ function get_bc_vectors(setup::Setup{T,2}, t) where {T}
         yIv_vy,
     )
 
-    # Use values directly (see diffusion.jl and strain_tensor.jl)
+    # Use values directly (see diffusion.jl)
     bc_vectors = (;
         bc_vectors...,
         ySu_ux,
