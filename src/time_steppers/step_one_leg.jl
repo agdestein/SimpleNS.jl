@@ -7,7 +7,6 @@ function step(stepper::OneLegStepper, Δt; bc_vectors = nothing)
     (; method, setup, pressure_solver, n, V, p, t, Vₙ, pₙ, tₙ) = stepper
     (; p_add_solve, β) = method
     (; grid, operators, boundary_conditions) = setup
-    (; bc_unsteady) = boundary_conditions
     (; G, M) = operators
     (; Ω⁻¹) = grid
 
@@ -36,7 +35,7 @@ function step(stepper::OneLegStepper, Δt; bc_vectors = nothing)
 
     # To make the velocity field uₙ₊₁ at tₙ₊₁ divergence-free we need the boundary
     # conditions at tₙ₊₁
-    if isnothing(bc_vectors) || bc_unsteady
+    if isnothing(bc_vectors)
         bc_vectors = get_bc_vectors(setup, tₙ + Δtₙ)
     end
     (; yM) = bc_vectors

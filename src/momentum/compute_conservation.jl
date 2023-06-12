@@ -7,7 +7,7 @@ function compute_conservation(V, t, setup; bc_vectors = nothing)
     (; grid, operators, boundary_conditions) = setup
     (; indu, indv, Ω, x, y, xp, yp, hx, hy, gx, gy) = grid
     (; M) = operators
-    (; bc_unsteady, u_bc, v_bc) = boundary_conditions
+    (; u_bc, v_bc) = boundary_conditions
 
     uₕ = @view V[indu]
     vₕ = @view V[indv]
@@ -15,7 +15,7 @@ function compute_conservation(V, t, setup; bc_vectors = nothing)
     Ωu = @view Ω[indu]
     Ωv = @view Ω[indv]
 
-    if isnothing(bc_vectors) || bc_unsteady
+    if isnothing(bc_vectors)
         bc_vectors = get_bc_vectors(setup, t)
     end
     (; yM) = bc_vectors

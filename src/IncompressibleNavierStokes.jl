@@ -27,7 +27,6 @@ include("grid/max_size.jl")
 
 # Models
 include("models/viscosity_models.jl")
-include("models/convection_models.jl")
 
 # Types
 include("force/force.jl")
@@ -36,21 +35,9 @@ include("operators/operators.jl")
 include("setup.jl")
 
 # Boundary condtions
-include("boundary_conditions/bc_av3.jl")
-include("boundary_conditions/bc_av_stag3.jl")
-include("boundary_conditions/bc_diff3.jl")
 include("boundary_conditions/bc_diff_stag.jl")
-include("boundary_conditions/bc_diff_stag3.jl")
-include("boundary_conditions/bc_div2.jl")
 include("boundary_conditions/bc_general.jl")
 include("boundary_conditions/bc_general_stag.jl")
-include("boundary_conditions/bc_general_stag_diff.jl")
-include("boundary_conditions/bc_int2.jl")
-include("boundary_conditions/bc_int3.jl")
-include("boundary_conditions/bc_int_mixed2.jl")
-include("boundary_conditions/bc_int_mixed_stag2.jl")
-include("boundary_conditions/bc_int_mixed_stag3.jl")
-include("boundary_conditions/bc_vort3.jl")
 include("boundary_conditions/get_bc_vectors.jl")
 
 # Operators
@@ -102,7 +89,6 @@ include("problems/is_steady.jl")
 # Solvers
 include("solvers/get_timestep.jl")
 include("solvers/solve.jl")
-include("solvers/solve_animate.jl")
 
 # Utils
 include("utils/get_lims.jl")
@@ -127,7 +113,6 @@ export SteadyBodyForce, UnsteadyBodyForce
 
 # Models
 export LaminarModel
-export NoRegConvectionModel
 
 # Processors
 export AbstractProcessor, Logger, StateObserver, VTKWriter
@@ -142,13 +127,12 @@ export stretched_grid, cosine_grid
 
 # Pressure solvers
 export DirectPressureSolver, CGPressureSolver, FourierPressureSolver
-export pressure_poisson,
-    pressure_poisson!, pressure_additional_solve, pressure_additional_solve!
+export pressure_poisson, pressure_additional_solve
 
 # Problems
 export SteadyStateProblem, UnsteadyProblem, is_steady
-export solve, solve_animate
-export momentum, momentum!
+export solve
+export momentum
 
 export create_initial_conditions, get_bc_vectors, get_velocity
 

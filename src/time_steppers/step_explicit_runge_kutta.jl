@@ -9,7 +9,6 @@ manner via the `u_bc` and `v_bc` functions.
 function step(stepper::ExplicitRungeKuttaStepper, Δt; bc_vectors = nothing)
     (; method, setup, pressure_solver, n, V, p, t, Vₙ, pₙ, tₙ) = stepper
     (; grid, operators, boundary_conditions) = setup
-    (; bc_unsteady) = boundary_conditions
     (; Ω⁻¹) = grid
     (; G, M) = operators
     (; A, b, c, p_add_solve) = method
@@ -54,7 +53,7 @@ function step(stepper::ExplicitRungeKuttaStepper, Δt; bc_vectors = nothing)
 
         # Boundary conditions at tᵢ₊₁
         tᵢ = tₙ + c[i] * Δtₙ
-        if isnothing(bc_vectors) || bc_unsteady
+        if isnothing(bc_vectors)
             bc_vectors = get_bc_vectors(setup, tᵢ)
         end
         (; yM) = bc_vectors
@@ -63,7 +62,7 @@ function step(stepper::ExplicitRungeKuttaStepper, Δt; bc_vectors = nothing)
         f = (M * (Vₙ / Δtₙ + V) + yM / Δtₙ) / c[i]
 
         # Solve the Poisson equation, but not for the first step if the boundary conditions are steady
-        if boundary_conditions.bc_unsteady || i > 1
+        if i > 1
             p = pressure_poisson(pressure_solver, f)
         else
             # Bc steady AND i = 1
@@ -78,9 +77,7 @@ function step(stepper::ExplicitRungeKuttaStepper, Δt; bc_vectors = nothing)
 
     # For steady bc we do an additional pressure solve
     # That saves a pressure solve for i = 1 in the next time step
-    if !bc_unsteady || p_add_solve
-        p = pressure_additional_solve(pressure_solver, V, p, tₙ + Δtₙ, setup; bc_vectors)
-    end
+    p = pressure_additional_solve(pressure_solver, V, p, tₙ + Δtₙ, setup; bc_vectors)
 
     t = tₙ + Δtₙ
 

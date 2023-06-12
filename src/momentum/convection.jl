@@ -5,7 +5,6 @@ Evaluate convective terms `c` and, optionally, Jacobian `∇c = ∂c/∂V`, usin
 model `model`. The convected quantity is `ϕ` (usually `ϕ = V`).
 """
 function convection(
-    ::NoRegConvectionModel,
     V,
     ϕ,
     setup;

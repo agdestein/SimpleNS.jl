@@ -6,13 +6,12 @@ field, resulting in same order pressure as velocity.
 """
 function pressure_additional_solve(pressure_solver, V, p, t, setup; bc_vectors = nothing)
     (; grid, operators, boundary_conditions) = setup
-    (; bc_unsteady) = boundary_conditions
     (; Ω⁻¹) = grid
     (; M) = operators
 
     # Get updated BC for ydM (time derivative of BC in ydM)
     # FIXME: `get_bc_vectors` are called to often (also inside `momentum!`)
-    if isnothing(bc_vectors) || bc_unsteady
+    if isnothing(bc_vectors)
         bc_vectors = get_bc_vectors(setup, t)
     end
     (; ydM) = bc_vectors

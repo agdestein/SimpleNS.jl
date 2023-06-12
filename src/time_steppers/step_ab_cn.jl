@@ -8,19 +8,17 @@ in the Adams-Bashforth part of the method.
 """
 function step(stepper::AdamsBashforthCrankNicolsonStepper, Δt; bc_vectors = nothing)
     (; method, setup, pressure_solver, n, V, p, t, Vₙ, pₙ, tₙ) = stepper
-    (; convection_model, viscosity_model, force, grid, operators, boundary_conditions) =
-        setup
-    (; bc_unsteady) = boundary_conditions
+    (; viscosity_model, force, grid, operators, boundary_conditions) = setup
     (; NV, Ω⁻¹) = grid
     (; G, M) = operators
     (; Diff) = operators
     (; p_add_solve, α₁, α₂, θ) = method
 
     # For the first time step, this might be necessary
-    if isnothing(bc_vectors) || bc_unsteady
+    if isnothing(bc_vectors)
         bc_vectors = get_bc_vectors(setup, tₙ)
     end
-    cₙ, = convection(convection_model, Vₙ, Vₙ, setup; bc_vectors)
+    cₙ, = convection(Vₙ, Vₙ, setup; bc_vectors)
 
     # Advance one step
     Δtₙ₋₁ = t - tₙ
@@ -33,7 +31,7 @@ function step(stepper::AdamsBashforthCrankNicolsonStepper, Δt; bc_vectors = not
     @assert Δtₙ ≈ Δtₙ₋₁
 
     # Unsteady BC at current time
-    if isnothing(bc_vectors) || bc_unsteady
+    if isnothing(bc_vectors)
         bc_vectors = get_bc_vectors(setup, tₙ)
     end
     (; yDiff) = bc_vectors
@@ -44,10 +42,10 @@ function step(stepper::AdamsBashforthCrankNicolsonStepper, Δt; bc_vectors = not
     bₙ = bodyforce(force, tₙ, setup)
 
     # Convection of current solution
-    cₙ, = convection(convection_model, Vₙ, Vₙ, setup; bc_vectors)
+    cₙ, = convection(Vₙ, Vₙ, setup; bc_vectors)
 
     # Unsteady BC at next time (Vₙ is not used normally in bodyforce.jl)
-    if isnothing(bc_vectors) || bc_unsteady
+    if isnothing(bc_vectors)
         bc_vectors = get_bc_vectors(setup, tₙ + Δt)
     end
     (; yDiff, y_p) = bc_vectors
@@ -78,7 +76,7 @@ function step(stepper::AdamsBashforthCrankNicolsonStepper, Δt; bc_vectors = not
     end
 
     # Make the velocity field `uₙ₊₁` at `tₙ₊₁` divergence-free (need BC at `tₙ₊₁`)
-    if isnothing(bc_vectors) || bc_unsteady
+    if isnothing(bc_vectors)
         bc_vectors = get_bc_vectors(setup, tₙ + Δt)
     end
     (; yM) = bc_vectors

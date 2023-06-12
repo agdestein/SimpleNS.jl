@@ -40,16 +40,6 @@ AbstractViscosityModel
 LaminarModel
 ```
 
-## Convection Models
-
-```@docs
-AbstractConvectionModel
-NoRegConvectionModel
-C2ConvectionModel
-C4ConvectionModel
-LerayConvectionModel
-```
-
 ## Momentum
 
 ```@docs
@@ -68,16 +58,11 @@ turbulent_viscosity
 
 ```@docs
 Operators
-ke_convection
-ke_diffusion
-ke_production
-ke_viscosity
 operator_averaging
 operator_convection_diffusion
 operator_divergence
 operator_interpolation
 operator_postprocessing
-operator_regularization
 operator_turbulent_diffusion
 ```
 

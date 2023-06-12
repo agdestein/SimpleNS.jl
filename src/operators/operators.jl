@@ -4,8 +4,6 @@
 Discrete operators.
 """
 Base.@kwdef struct Operators{T}
-    α::T = 0
-
     Au_ux::SparseMatrixCSC{T,Int} = spzeros(T, 0, 0)
     Au_uy::SparseMatrixCSC{T,Int} = spzeros(T, 0, 0)
     Au_uz::SparseMatrixCSC{T,Int} = spzeros(T, 0, 0)
@@ -252,9 +250,6 @@ function Operators(grid::Grid{T}, boundary_conditions, viscosity_model) where {T
 
     # Convection operators on u- and v- centered volumes
     op_con = operator_convection_diffusion(grid, boundary_conditions, viscosity_model)
-
-    # Regularization modelling - this changes the convective term
-    op_reg = operator_regularization(grid, op_con)
 
     # Post-processing
     op_pos = operator_postprocessing(grid, boundary_conditions)

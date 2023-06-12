@@ -28,18 +28,17 @@ function momentum(
     nopressure = false,
     newton_factor = false,
 )
-    (; viscosity_model, convection_model, force, boundary_conditions, operators) = setup
+    (; viscosity_model, force, boundary_conditions, operators) = setup
     (; G) = operators
 
     # Unsteady BC
-    if isnothing(bc_vectors) || boundary_conditions.bc_unsteady
+    if isnothing(bc_vectors)
         bc_vectors = get_bc_vectors(setup, t)
     end
     (; y_p) = bc_vectors
 
     # Convection
-    c, ∇c =
-        convection(convection_model, V, ϕ, setup; bc_vectors, get_jacobian, newton_factor)
+    c, ∇c = convection(V, ϕ, setup; bc_vectors, get_jacobian, newton_factor)
 
     # Diffusion
     d, ∇d = diffusion(viscosity_model, V, setup; bc_vectors, get_jacobian)

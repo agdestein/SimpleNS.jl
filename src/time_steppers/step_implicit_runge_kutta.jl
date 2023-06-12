@@ -10,7 +10,6 @@ function step(stepper::ImplicitRungeKuttaStepper, Δt; bc_vectors = nothing)
     # TODO: Implement out-of-place IRK
     (; method, setup, pressure_solver, n, V, p, t, Vₙ, pₙ, tₙ) = stepper
     (; grid, operators, boundary_conditions) = setup
-    (; bc_unsteady) = boundary_conditions
     (; NV, Np, Ω⁻¹) = grid
     (; G, M) = operators
     (; A, b, c, p_add_solve, maxiter, abstol, newton_type) = method
@@ -38,7 +37,7 @@ function step(stepper::ImplicitRungeKuttaStepper, Δt; bc_vectors = nothing)
 
         # Boundary conditions at all the stage time steps to make the velocity field
         # uᵢ₊₁ at tᵢ₊₁ divergence-free (BC at tᵢ₊₁ needed)
-        if isnothing(bc_vectors) || bc_unsteady
+        if isnothing(bc_vectors)
             # Modify `yM`
             tᵢ = tⱼ[i]
             bc_vectors = get_bc_vectors(setup, tᵢ)
@@ -130,7 +129,7 @@ function step(stepper::ImplicitRungeKuttaStepper, Δt; bc_vectors = nothing)
     # Make V satisfy the incompressibility constraint at n+1; this is only needed when the
     # boundary conditions are time-dependent. For stiffly accurate methods, this can also
     # be skipped (e.g. Radau IIA) - this still needs to be implemented
-    if isnthing(bc_vectors) || bc_unsteady
+    if isnothing(bc_vectors)
         bc_vectors = get_bc_vectors(setup, tₙ + Δtₙ)
         (; yM) = bc_vectors
 

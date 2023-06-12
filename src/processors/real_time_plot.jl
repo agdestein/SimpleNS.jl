@@ -31,7 +31,7 @@ function real_time_plot(
     fieldname = :vorticity,
     type = heatmap,
     sleeptime = 0.001,
-) where {T}
+)
     (; boundary_conditions, grid) = setup
     (; xlims, ylims, x, y, xp, yp) = grid
 
