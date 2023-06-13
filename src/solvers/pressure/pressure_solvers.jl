@@ -57,16 +57,9 @@ end
 Build Fourier pressure solver from setup.
 """
 function FourierPressureSolver(setup)
-    (; grid, boundary_conditions, operators) = setup
+    (; grid, operators) = setup
     (; hx, hy, Npx, Npy) = grid
     (; A) = operators
-
-    if any(
-        !isequal((:periodic, :periodic)),
-        (boundary_conditions.u.x, boundary_conditions.v.y),
-    )
-        error("FourierPressureSolver only implemented for periodic boundary conditions")
-    end
 
     Δx = hx[1]
     Δy = hy[1]

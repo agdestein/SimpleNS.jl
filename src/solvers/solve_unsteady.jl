@@ -65,9 +65,6 @@ function solve(
     )
     isadaptive && (Δt = get_timestep(stepper, cfl))
 
-    # Initialize BC arrays
-    bc_vectors = get_bc_vectors(setup, stepper.t)
-
     # Processors for iteration results  
     for ps ∈ processors
         initialize!(ps, stepper)
@@ -83,7 +80,7 @@ function solve(
         if isadaptive
             if rem(stepper.n, n_adapt_Δt) == 0
                 # Change timestep based on operators
-                Δt = get_timestep(stepper, cfl; bc_vectors)
+                Δt = get_timestep(stepper, cfl)
             end
 
             # Make sure not to step past `t_end`
@@ -91,7 +88,7 @@ function solve(
         end
 
         # Perform a single time step with the time integration method
-        stepper = step(stepper, Δt; bc_vectors)
+        stepper = step(stepper, Δt)
 
         # Process iteration results with each processor
         for ps ∈ processors

@@ -1,12 +1,12 @@
 """
-    step(stepper::OneLegStepper, Δt; bc_vectors = nothing)
+    step(stepper::OneLegStepper, Δt)
 
 Do one time step using one-leg-β-method.
 """
-function step(stepper::OneLegStepper, Δt; bc_vectors = nothing)
+function step(stepper::OneLegStepper, Δt)
     (; method, setup, pressure_solver, n, V, p, t, Vₙ, pₙ, tₙ) = stepper
     (; p_add_solve, β) = method
-    (; grid, operators, boundary_conditions) = setup
+    (; grid, operators) = setup
     (; G, M) = operators
     (; Ω⁻¹) = grid
 
@@ -27,24 +27,17 @@ function step(stepper::OneLegStepper, Δt; bc_vectors = nothing)
     p = @. (1 + β) * pₙ - β * pₙ₋₁
 
     # Right-hand side of the momentum equation
-    F, = momentum(V, V, p, t, setup; bc_vectors)
+    F, = momentum(V, V, p, t, setup)
 
     # Take a time step with this right-hand side, this gives an intermediate velocity field
     # (not divergence free)
     V = @. (2β * Vₙ - (β - 1 // 2) * Vₙ₋₁ + Δtₙ * Ω⁻¹ * F) / (β + 1 // 2)
 
-    # To make the velocity field uₙ₊₁ at tₙ₊₁ divergence-free we need the boundary
-    # conditions at tₙ₊₁
-    if isnothing(bc_vectors)
-        bc_vectors = get_bc_vectors(setup, tₙ + Δtₙ)
-    end
-    (; yM) = bc_vectors
-
     # Adapt time step for pressure calculation
     Δtᵦ = Δtₙ / (β + 1 // 2)
 
     # Divergence of intermediate velocity field
-    f = (M * V + yM) / Δtᵦ
+    f = (M * V) / Δtᵦ
 
     # Solve the Poisson equation for the pressure
     Δp = pressure_poisson(pressure_solver, f)
@@ -58,7 +51,7 @@ function step(stepper::OneLegStepper, Δt; bc_vectors = nothing)
 
     # Alternatively, do an additional Poisson solve
     if p_add_solve
-        p = pressure_additional_solve(pressure_solver, V, p, tₙ + Δtₙ, setup; bc_vectors)
+        p = pressure_additional_solve(pressure_solver, V, p, tₙ + Δtₙ, setup)
     end
 
     t = tₙ + Δtₙ

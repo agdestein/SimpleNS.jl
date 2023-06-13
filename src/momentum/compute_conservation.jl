@@ -1,13 +1,12 @@
 """
-    compute_conservation(V, t, setup; bc_vectors = nothing)
+    compute_conservation(V, t, setup)
 
 Compute mass, momentum and energy conservation properties of velocity field.
 """
-function compute_conservation(V, t, setup; bc_vectors = nothing)
-    (; grid, operators, boundary_conditions) = setup
+function compute_conservation(V, t, setup)
+    (; grid, operators) = setup
     (; indu, indv, Ω, x, y, xp, yp, hx, hy, gx, gy) = grid
     (; M) = operators
-    (; u_bc, v_bc) = boundary_conditions
 
     uₕ = @view V[indu]
     vₕ = @view V[indv]
@@ -15,39 +14,15 @@ function compute_conservation(V, t, setup; bc_vectors = nothing)
     Ωu = @view Ω[indu]
     Ωv = @view Ω[indv]
 
-    if isnothing(bc_vectors)
-        bc_vectors = get_bc_vectors(setup, t)
-    end
-    (; yM) = bc_vectors
-
-    uLe_i = reshape(u_bc.(x[1], yp, t), :)
-    uRi_i = reshape(u_bc.(x[end], yp, t), :)
-    vLo_i = reshape(v_bc.(xp, y[1], t), :)
-    vUp_i = reshape(v_bc.(xp, y[end], t), :)
-
     # Check if new velocity field is divergence free (mass conservation)
-    maxdiv = maximum(abs.(M * V + yM))
+    maxdiv = maximum(abs.(M * V))
 
     # Calculate total momentum
     umom = sum(Ωu .* uₕ)
     vmom = sum(Ωv .* vₕ)
 
-    # Add boundary contributions in case of Dirichlet BC
-    boundary_conditions.u.x[1] == :dirichlet && (umom += sum(uLe_i .* hy) * gx[1])
-    boundary_conditions.u.x[2] == :dirichlet && (umom += sum(uRi_i .* hy) * gx[end])
-    boundary_conditions.v.y[1] == :dirichlet && (vmom += sum(vLo_i .* hx) * gy[1])
-    boundary_conditions.v.y[2] == :dirichlet && (vmom += sum(vUp_i .* hx) * gy[end])
-
     # Calculate total kinetic energy
     k = 1 / 2 * sum(Ω .* V .^ 2)
-
-    # Add boundary contributions in case of Dirichlet BC
-    boundary_conditions.u.x[1] == :dirichlet && (k += 1 / 2 * sum(uLe_i .^ 2 .* hy) * gx[1])
-    boundary_conditions.u.x[2] == :dirichlet &&
-        (k += 1 / 2 * sum(uRi_i .^ 2 .* hy) * gx[end])
-    boundary_conditions.v.y[1] == :dirichlet && (k += 1 / 2 * sum(vLo_i .^ 2 .* hx) * gy[1])
-    boundary_conditions.v.y[2] == :dirichlet &&
-        (k += 1 / 2 * sum(vUp_i .^ 2 .* hx) * gy[end])
 
     maxdiv, umom, vmom, k
 end

@@ -1,7 +1,6 @@
 """
     momentum(
         V, ϕ, p, t, setup;
-        bc_vectors = nothing,
         get_jacobian = false,
         nopressure = false,
         newton_factor = false,
@@ -12,7 +11,6 @@ Calculate RHS of momentum equations and, optionally, Jacobian with respect to ve
   - `V`: velocity field
   - `ϕ`: convected field: e.g. ``\\frac{\\partial (\\phi_x V)}{\\partial x} + \\frac{\\partial (\\phi_y V)}{\\partial y}``; usually `ϕ = V` (so `ϕx = u`, `ϕy = v`)
   - `p`: pressure
-  - `bc_vectors`: boundary condition vectors `y`
   - `get_jacobian`: return `∇F = ∂F/∂V`
   - `nopressure`: exclude pressure gradient; in this case input argument `p` is not used
   - `newton_factor`
@@ -23,25 +21,18 @@ function momentum(
     p,
     t,
     setup;
-    bc_vectors = nothing,
     get_jacobian = false,
     nopressure = false,
     newton_factor = false,
 )
-    (; viscosity_model, force, boundary_conditions, operators) = setup
+    (; viscosity_model, force, operators) = setup
     (; G) = operators
 
-    # Unsteady BC
-    if isnothing(bc_vectors)
-        bc_vectors = get_bc_vectors(setup, t)
-    end
-    (; y_p) = bc_vectors
-
     # Convection
-    c, ∇c = convection(V, ϕ, setup; bc_vectors, get_jacobian, newton_factor)
+    c, ∇c = convection(V, ϕ, setup; get_jacobian, newton_factor)
 
     # Diffusion
-    d, ∇d = diffusion(viscosity_model, V, setup; bc_vectors, get_jacobian)
+    d, ∇d = diffusion(viscosity_model, V, setup; get_jacobian)
 
     # Body force
     b = bodyforce(force, t, setup)
@@ -52,7 +43,7 @@ function momentum(
     # Nopressure = false is the most common situation, in which we return the entire
     # right-hand side vector
     if !nopressure
-        F = F .- (G * p .+ y_p)
+        F = F .- (G * p)
     end
 
     if get_jacobian

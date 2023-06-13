@@ -30,7 +30,6 @@ include("models/viscosity_models.jl")
 
 # Types
 include("force/force.jl")
-include("boundary_conditions/boundary_conditions.jl")
 include("operators/operators.jl")
 include("setup.jl")
 
@@ -38,7 +37,6 @@ include("setup.jl")
 include("boundary_conditions/bc_diff_stag.jl")
 include("boundary_conditions/bc_general.jl")
 include("boundary_conditions/bc_general_stag.jl")
-include("boundary_conditions/get_bc_vectors.jl")
 
 # Operators
 include("operators/operator_averaging.jl")
@@ -46,7 +44,6 @@ include("operators/operator_convection_diffusion.jl")
 include("operators/operator_divergence.jl")
 include("operators/operator_interpolation.jl")
 include("operators/operator_postprocessing.jl")
-include("operators/operator_regularization.jl")
 
 # Pressure solvers
 include("solvers/pressure/pressure_solvers.jl")
@@ -96,13 +93,11 @@ include("utils/get_lims.jl")
 # Postprocess
 include("postprocess/get_velocity.jl")
 include("postprocess/get_vorticity.jl")
-include("postprocess/get_streamfunction.jl")
 include("postprocess/plot_force.jl")
 include("postprocess/plot_grid.jl")
 include("postprocess/plot_pressure.jl")
 include("postprocess/plot_velocity.jl")
 include("postprocess/plot_vorticity.jl")
-include("postprocess/plot_streamfunction.jl")
 include("postprocess/save_vtk.jl")
 
 # Reexport
@@ -120,7 +115,7 @@ export initialize!, process!, finalize!
 export real_time_plot
 
 # Setup
-export Grid, Operators, BoundaryConditions, Setup
+export Grid, Operators, Setup
 
 # 1D grids
 export stretched_grid, cosine_grid
@@ -134,12 +129,11 @@ export SteadyStateProblem, UnsteadyProblem, is_steady
 export solve
 export momentum
 
-export create_initial_conditions, get_bc_vectors, get_velocity
+export create_initial_conditions, get_velocity
 
 export plot_force,
     plot_grid,
     plot_pressure,
-    plot_streamfunction,
     plot_velocity,
     plot_vorticity,
     save_vtk

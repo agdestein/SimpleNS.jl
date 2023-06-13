@@ -1,5 +1,5 @@
 """
-    convection(model, V, ϕ, setup; bc_vectors, get_jacobian = false)
+    convection(model, V, ϕ, setup; get_jacobian = false)
 
 Evaluate convective terms `c` and, optionally, Jacobian `∇c = ∂c/∂V`, using the convection
 model `model`. The convected quantity is `ϕ` (usually `ϕ = V`).
@@ -8,7 +8,6 @@ function convection(
     V,
     ϕ,
     setup;
-    bc_vectors,
     get_jacobian = false,
     newton_factor = false,
 )
@@ -17,7 +16,6 @@ function convection(
         V,
         ϕ,
         setup;
-        bc_vectors,
         get_jacobian,
         newton_factor,
     )

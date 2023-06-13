@@ -1,7 +1,6 @@
 """
     convection_components(
         V, ϕ, setup;
-        bc_vectors,
         get_jacobian = false,
         newton_factor = false,
     )
@@ -12,7 +11,6 @@ function convection_components(
     V,
     ϕ,
     setup;
-    bc_vectors,
     get_jacobian = false,
     newton_factor = false,
 )
@@ -21,8 +19,6 @@ function convection_components(
     (; Cux, Cuy, Cvx, Cvy) = operators
     (; Au_ux, Au_uy, Av_vx, Av_vy) = operators
     (; Iu_ux, Iv_uy, Iu_vx, Iv_vy) = operators
-    (; yAu_ux, yAu_uy, yAv_vx, yAv_vy) = bc_vectors
-    (; yIu_ux, yIv_uy, yIu_vx, yIv_vy) = bc_vectors
 
     (; indu, indv) = grid
 
@@ -33,20 +29,20 @@ function convection_components(
     ϕv = @view ϕ[indv]
 
     # Convection components
-    u_ux = Au_ux * uₕ + yAu_ux                # u at ux
-    ū_ux = Iu_ux * ϕu + yIu_ux                # ū at ux
+    u_ux = Au_ux * uₕ                         # u at ux
+    ū_ux = Iu_ux * ϕu                         # ū at ux
     ∂uū∂x = Cux * (u_ux .* ū_ux)
 
-    u_uy = Au_uy * uₕ + yAu_uy                # u at uy
-    v̄_uy = Iv_uy * ϕv + yIv_uy                # ū at uy
+    u_uy = Au_uy * uₕ                         # u at uy
+    v̄_uy = Iv_uy * ϕv                         # ū at uy
     ∂uv̄∂y = Cuy * (u_uy .* v̄_uy)
 
-    v_vx = Av_vx * vₕ + yAv_vx                # v at vx
-    ū_vx = Iu_vx * ϕu + yIu_vx                # ū at vx
+    v_vx = Av_vx * vₕ                         # v at vx
+    ū_vx = Iu_vx * ϕu                         # ū at vx
     ∂vū∂x = Cvx * (v_vx .* ū_vx)
 
-    v_vy = Av_vy * vₕ + yAv_vy                # v at vy
-    v̄_vy = Iv_vy * ϕv + yIv_vy                # ū at vy
+    v_vy = Av_vy * vₕ                         # v at vy
+    v̄_vy = Iv_vy * ϕv                         # ū at vy
     ∂vv̄∂y = Cvy * (v_vy .* v̄_vy)
 
     cu = ∂uū∂x + ∂uv̄∂y

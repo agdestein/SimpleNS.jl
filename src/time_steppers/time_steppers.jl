@@ -3,7 +3,7 @@
 
 Time stepper for solving ODEs.
 """
-Base.@kwdef struct TimeStepper{M,T,N,S<:Setup{T,N},P<:AbstractPressureSolver{T}}
+Base.@kwdef struct TimeStepper{M,T,S,P}
     method::M
     setup::S
     pressure_solver::P

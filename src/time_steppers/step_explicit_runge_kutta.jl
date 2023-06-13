@@ -1,14 +1,14 @@
 """
-    step(stepper::ExplicitRungeKuttaStepper, Δt; bc_vectors = nothing)
+    step(stepper::ExplicitRungeKuttaStepper, Δt)
 
 Perform one time step for the general explicit Runge-Kutta method (ERK).
 
 Dirichlet boundary points are not part of solution vector but are prescribed in a strong
 manner via the `u_bc` and `v_bc` functions.
 """
-function step(stepper::ExplicitRungeKuttaStepper, Δt; bc_vectors = nothing)
+function step(stepper::ExplicitRungeKuttaStepper, Δt)
     (; method, setup, pressure_solver, n, V, p, t, Vₙ, pₙ, tₙ) = stepper
-    (; grid, operators, boundary_conditions) = setup
+    (; grid, operators) = setup
     (; Ω⁻¹) = grid
     (; G, M) = operators
     (; A, b, c, p_add_solve) = method
@@ -37,10 +37,9 @@ function step(stepper::ExplicitRungeKuttaStepper, Δt; bc_vectors = nothing)
     # At i = s we calculate Fₛ, pₙ₊₁, and uₙ₊₁
     for i = 1:nstage
         # Right-hand side for tᵢ based on current velocity field uₕ, vₕ at level i. This
-        # includes force evaluation at tᵢ and pressure gradient. Boundary conditions will be
-        # set through `get_bc_vectors` inside momentum. The pressure p is not important here,
+        # includes force evaluation at tᵢ and pressure gradient. The pressure p is not important here,
         # it will be removed again in the next step
-        F, ∇F = momentum(V, V, p, tᵢ, setup; bc_vectors)
+        F, ∇F = momentum(V, V, p, tᵢ, setup)
 
         # Store right-hand side of stage i
         # Remove the -G*p contribution (but not y_p)
@@ -53,13 +52,9 @@ function step(stepper::ExplicitRungeKuttaStepper, Δt; bc_vectors = nothing)
 
         # Boundary conditions at tᵢ₊₁
         tᵢ = tₙ + c[i] * Δtₙ
-        if isnothing(bc_vectors)
-            bc_vectors = get_bc_vectors(setup, tᵢ)
-        end
-        (; yM) = bc_vectors
 
         # Divergence of intermediate velocity field
-        f = (M * (Vₙ / Δtₙ + V) + yM / Δtₙ) / c[i]
+        f = (M * (Vₙ / Δtₙ + V)) / c[i]
 
         # Solve the Poisson equation, but not for the first step if the boundary conditions are steady
         if i > 1
@@ -77,7 +72,7 @@ function step(stepper::ExplicitRungeKuttaStepper, Δt; bc_vectors = nothing)
 
     # For steady bc we do an additional pressure solve
     # That saves a pressure solve for i = 1 in the next time step
-    p = pressure_additional_solve(pressure_solver, V, p, tₙ + Δtₙ, setup; bc_vectors)
+    p = pressure_additional_solve(pressure_solver, V, p, tₙ + Δtₙ, setup)
 
     t = tₙ + Δtₙ
 

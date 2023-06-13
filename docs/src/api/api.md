@@ -9,13 +9,6 @@ IncompressibleNavierStokes
 Setup
 ```
 
-## Boundary conditions
-
-```@docs
-BoundaryConditions
-get_bc_vectors
-```
-
 ## Force
 
 ```@docs
@@ -69,14 +62,12 @@ operator_turbulent_diffusion
 ## Postprocess
 
 ```@docs
-get_streamfunction
 get_velocity
 get_vorticity
 vorticity!
 plot_force
 plot_grid
 plot_pressure
-plot_streamfunction
 plot_velocity
 plot_vorticity
 save_vtk

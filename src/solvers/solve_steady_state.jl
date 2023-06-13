@@ -42,12 +42,8 @@ function solve(
     # Start with Picard iterations
     newton_factor = false
 
-    # Initialize BC arrays
-    bc_vectors = get_bc_vectors(setup, t)
-    (; yM) = bc_vectors
-
     # Residual of momentum equations at start
-    F, ∇F = momentum(V, V, p, t, setup; bc_vectors)
+    F, ∇F = momentum(V, V, p, t, setup)
     maxres = maximum(abs.(F))
 
     println("Initial momentum residual = $maxres")
@@ -72,12 +68,11 @@ function solve(
             p,
             t,
             setup;
-            bc_vectors,
             get_jacobian = true,
             newton_factor,
         )
 
-        fmass = M * V + yM
+        fmass = M * V
         f = [-F; fmass]
         Z = [∇F -G; -M Z2]
 
@@ -92,9 +87,9 @@ function solve(
         p .+= Δp
 
         # Calculate mass, momentum and energy
-        # maxdiv, umom, vmom, k = compute_conservation(V, t, setup; bc_vectors)
+        # maxdiv, umom, vmom, k = compute_conservation(V, t, setup)
 
-        F, ∇F = momentum(V, V, p, t, setup; bc_vectors)
+        F, ∇F = momentum(V, V, p, t, setup)
         maxres = maximum(abs.(F))
 
         println(": momentum residual = $maxres")

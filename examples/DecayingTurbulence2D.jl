@@ -69,17 +69,13 @@ V = [reshape(u, :); reshape(v, :)]
 f = setup.operators.M * V
 p = zero(f)
 
-# Boundary conditions
-bc_vectors = get_bc_vectors(setup, 0.0)
-(; yM) = bc_vectors
-
 # Make velocity field divergence free
 (; Ω⁻¹) = setup.grid;
 (; G, M) = setup.operators;
-f = M * V + yM;
+f = M * V;
 Δp = pressure_poisson(pressure_solver, f);
 V .-= Ω⁻¹ .* (G * Δp);
-p = pressure_additional_solve(pressure_solver, V, p, 0.0, setup; bc_vectors);
+p = pressure_additional_solve(pressure_solver, V, p, 0.0, setup);
 
 V₀, p₀ = V, p
 
@@ -130,7 +126,8 @@ espec
 
 # Solve unsteady problem
 problem = UnsteadyProblem(setup, V₀, p₀, tlims);
-V, p = solve(problem, RK44(); Δt = 0.001, processors, pressure_solver, inplace = true);
+# problem = UnsteadyProblem(setup, V, p, tlims);
+V, p = solve(problem, RK44(); Δt = 0.001, processors, pressure_solver);
 
 # Real time plot
 rtp

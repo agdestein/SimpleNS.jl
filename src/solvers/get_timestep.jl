@@ -1,9 +1,9 @@
 """
-    get_timestep(stepper, cfl; bc_vectors)
+    get_timestep(stepper, cfl)
 
 Estimate time step based on eigenvalues of operators, using Gershgorin.
 """
-function get_timestep(stepper::TimeStepper{M,T,2}, cfl; bc_vectors) where {M,T}
+function get_timestep(stepper::TimeStepper{M,T,2}, cfl) where {M,T}
     (; setup, method, V) = stepper
     (; grid, operators) = setup
     (; NV, indu, indv, Ω⁻¹) = grid
@@ -11,7 +11,6 @@ function get_timestep(stepper::TimeStepper{M,T,2}, cfl; bc_vectors) where {M,T}
     (; Cux, Cuy, Cvx, Cvy) = operators
     (; Au_ux, Au_uy, Av_vx, Av_vy) = operators
     (; Iu_ux, Iu_vx, Iv_uy, Iv_vy) = operators
-    (; yIu_ux, yIu_vx, yIv_uy, yIv_vy) = bc_vectors
 
     uₕ = @view V[indu]
     vₕ = @view V[indv]
@@ -20,11 +19,11 @@ function get_timestep(stepper::TimeStepper{M,T,2}, cfl; bc_vectors) where {M,T}
     if isexplicit(method)
         # Convective part
         Cu =
-            Cux * spdiagm(Iu_ux * uₕ + yIu_ux) * Au_ux +
-            Cuy * spdiagm(Iv_uy * vₕ + yIv_uy) * Au_uy
+            Cux * spdiagm(Iu_ux * uₕ) * Au_ux +
+            Cuy * spdiagm(Iv_uy * vₕ) * Au_uy
         Cv =
-            Cvx * spdiagm(Iu_vx * uₕ + yIu_vx) * Av_vx +
-            Cvy * spdiagm(Iv_vy * vₕ + yIv_vy) * Av_vy
+            Cvx * spdiagm(Iu_vx * uₕ) * Av_vx +
+            Cvy * spdiagm(Iv_vy * vₕ) * Av_vy
         C = blockdiag(Cu, Cv)
         test = spdiagm(Ω⁻¹) * C
         sum_conv = abs.(test) * ones(NV) - diag(abs.(test)) - diag(test)

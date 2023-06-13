@@ -1,9 +1,9 @@
 """
-    operator_interpolation(grid, boundary_conditions)
+    operator_interpolation(grid)
 
 Construct averaging operators.
 """
-function operator_interpolation(grid, boundary_conditions)
+function operator_interpolation(grid)
     (; Nx, Ny) = grid
     (; Nux_in, Nux_b, Nux_t, Nuy_in, Nuy_b, Nuy_t) = grid
     (; Nvx_in, Nvx_b, Nvx_t, Nvy_in, Nvy_b, Nvy_t) = grid
@@ -16,17 +16,8 @@ function operator_interpolation(grid, boundary_conditions)
     mat_hy = Diagonal(hyi)
 
     # Periodic boundary conditions
-    if boundary_conditions.u.x == (:periodic, :periodic)
-        mat_hx2 = spdiagm(Nx + 2, Nx + 2, [hx[end]; hx; hx[1]])
-    else
-        mat_hx2 = spdiagm(Nx + 2, Nx + 2, [hx[1]; hx; hx[end]])
-    end
-
-    if boundary_conditions.v.y == (:periodic, :periodic)
-        mat_hy2 = spdiagm(Ny + 2, Ny + 2, [hy[end]; hy; hy[1]])
-    else
-        mat_hy2 = spdiagm(Ny + 2, Ny + 2, [hy[1]; hy; hy[end]])
-    end
+    mat_hx2 = spdiagm(Nx + 2, Nx + 2, [hx[end]; hx; hx[1]])
+    mat_hy2 = spdiagm(Ny + 2, Ny + 2, [hy[end]; hy; hy[1]])
 
     ## Interpolation operators, u-component
     ## Iu_ux
@@ -38,21 +29,16 @@ function operator_interpolation(grid, boundary_conditions)
         Nux_t,
         Nux_in,
         Nux_b,
-        boundary_conditions.u.x[1],
-        boundary_conditions.u.x[2],
         hx[1],
         hx[end],
     )
 
     # Extend to 2D
     Iu_ux = mat_hy ⊗ (I1D * Iu_ux_bc.B1D)
-    Iu_ux_bc = (; Iu_ux_bc..., Bbc = mat_hy ⊗ (I1D * Iu_ux_bc.Btemp))
 
     ## Iv_uy
     diag1 = fill(weight, Nvx_t - 1)
     I1D = spdiagm(Nvx_t - 1, Nvx_t, 0 => diag1, 1 => diag1)
-    boundary_conditions.u.x[1] == :pressure && (I1D[1, :] ./= 2)
-    boundary_conditions.u.x[2] == :pressure && (I1D[end, :] ./= 2)
 
     # The restriction is essentially 1D so it can be directly applied to I1D
     I1D = Bvux * I1D * mat_hx2
@@ -64,8 +50,6 @@ function operator_interpolation(grid, boundary_conditions)
         Nuy_in + 1,
         Nvy_in,
         Nb,
-        boundary_conditions.v.y[1],
-        boundary_conditions.v.y[2],
         hy[1],
         hy[end],
     )
@@ -77,8 +61,6 @@ function operator_interpolation(grid, boundary_conditions)
         Nvx_t,
         Nvx_in,
         Nvx_b,
-        boundary_conditions.v.x[1],
-        boundary_conditions.v.x[2],
         hx[1],
         hx[end],
     )
@@ -97,16 +79,12 @@ function operator_interpolation(grid, boundary_conditions)
     I1D = spdiagm(Nuy_t - 1, Nuy_t, 0 => diag1, 1 => diag1)
     I1D = Buvy * I1D * mat_hy2
     I2D = I1D ⊗ I(Nvx_t - 1)
-    boundary_conditions.v.y[1] == :pressure && (I1D[1, :] ./= 2)
-    boundary_conditions.v.y[2] == :pressure && (I1D[end, :] ./= 2)
 
     # Boundary conditions low/up
     Iu_vx_bc_lu = bc_general_stag(
         Nuy_t,
         Nuy_in,
         Nuy_b,
-        boundary_conditions.u.y[1],
-        boundary_conditions.u.y[2],
         hy[1],
         hy[end],
     )
@@ -119,8 +97,6 @@ function operator_interpolation(grid, boundary_conditions)
         Nvx_in + 1,
         Nux_in,
         Nb,
-        boundary_conditions.u.x[1],
-        boundary_conditions.u.x[2],
         hx[1],
         hx[end],
     )
@@ -140,29 +116,15 @@ function operator_interpolation(grid, boundary_conditions)
         Nvy_t,
         Nvy_in,
         Nvy_b,
-        boundary_conditions.v.y[1],
-        boundary_conditions.v.y[2],
         hy[1],
         hy[end],
     )
 
     # Extend to 2D
     Iv_vy = (I1D * Iv_vy_bc.B1D) ⊗ mat_hx
-    Iv_vy_bc = (; Iv_vy_bc..., Bbc = (I1D * Iv_vy_bc.Btemp) ⊗ mat_hx)
 
     ## Group operators
-    operators = (;
-        Iu_ux,
-        Iv_uy,
-        Iu_vx,
-        Iv_vy,
-        Iu_ux_bc,
-        Iv_vy_bc,
-        Iv_uy_bc_lr,
-        Iv_uy_bc_lu,
-        Iu_vx_bc_lr,
-        Iu_vx_bc_lu,
-    )
+    operators = (; Iu_ux, Iv_uy, Iu_vx, Iv_vy)
 
     operators
 end

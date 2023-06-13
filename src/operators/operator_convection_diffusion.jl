@@ -1,13 +1,9 @@
 """
-    operator_convection_diffusion(grid, boundary_conditions, viscosity_model)
+    operator_convection_diffusion(grid, viscosity_model)
 
 Construct convection and diffusion operators.
 """
-function operator_convection_diffusion(
-    grid,
-    boundary_conditions,
-    viscosity_model,
-)
+function operator_convection_diffusion(grid, viscosity_model)
     (; Nx, Ny) = grid
     (; Nux_in, Nux_b, Nux_t, Nuy_in, Nuy_b, Nuy_t) = grid
     (; Nvx_in, Nvx_b, Nvx_t, Nvy_in, Nvy_b, Nvy_t) = grid
@@ -61,15 +57,12 @@ function operator_convection_diffusion(
         Nux_t,
         Nux_in,
         Nux_b,
-        boundary_conditions.u.x[1],
-        boundary_conditions.u.x[2],
         hx[1],
         hx[end],
     )
 
     # Extend to 2D
     Su_ux = I(Ny) ⊗ (S1D * Su_ux_bc.B1D)
-    Su_ux_bc = (; Su_ux_bc..., Bbc = I(Ny) ⊗ (S1D * Su_ux_bc.Btemp))
 
     ## Su_uy: evaluate uy
     diag1 = 1 ./ gyd
@@ -80,15 +73,12 @@ function operator_convection_diffusion(
         Nuy_t,
         Nuy_in,
         Nuy_b,
-        boundary_conditions.u.y[1],
-        boundary_conditions.u.y[2],
         hy[1],
         hy[end],
     )
 
     # Extend to 2D
     Su_uy = (S1D * Su_uy_bc.B1D) ⊗ I(Nux_in)
-    Su_uy_bc = (; Su_uy_bc..., Bbc = (S1D * Su_uy_bc.Btemp) ⊗ I(Nux_in))
 
     ## Sv_uy: evaluate vx at uy; same as Iv_uy except for mesh sizes and -diag diag
     diag1 = 1 ./ gxd
@@ -104,8 +94,6 @@ function operator_convection_diffusion(
         Nuy_in + 1,
         Nvy_in,
         Nb,
-        boundary_conditions.v.y[1],
-        boundary_conditions.v.y[2],
         hy[1],
         hy[end],
     )
@@ -117,8 +105,6 @@ function operator_convection_diffusion(
         Nvx_t,
         Nvx_in,
         Nvx_b,
-        boundary_conditions.v.x[1],
-        boundary_conditions.v.x[2],
         hx[1],
         hx[end],
     )
@@ -143,8 +129,6 @@ function operator_convection_diffusion(
         Nuy_t,
         Nuy_in,
         Nuy_b,
-        boundary_conditions.u.y[1],
-        boundary_conditions.u.y[2],
         hy[1],
         hy[end],
     )
@@ -157,8 +141,6 @@ function operator_convection_diffusion(
         Nvx_in + 1,
         Nux_in,
         Nb,
-        boundary_conditions.u.x[1],
-        boundary_conditions.u.x[2],
         hx[1],
         hx[end],
     )
@@ -178,16 +160,12 @@ function operator_convection_diffusion(
         Nvx_t,
         Nvx_in,
         Nvx_b,
-        boundary_conditions.v.x[1],
-        boundary_conditions.v.x[2],
         hx[1],
         hx[end],
     )
 
     # Extend to 2D
     Sv_vx = I(Nvy_in) ⊗ (S1D * Sv_vx_bc.B1D)
-
-    Sv_vx_bc = (; Sv_vx_bc..., Bbc = I(Nvy_in) ⊗ (S1D * Sv_vx_bc.Btemp))
 
     ## Sv_vy: evaluate vy
     diag1 = 1 ./ hyd
@@ -198,22 +176,17 @@ function operator_convection_diffusion(
         Nvy_t,
         Nvy_in,
         Nvy_b,
-        boundary_conditions.v.y[1],
-        boundary_conditions.v.y[2],
         hy[1],
         hy[end],
     )
 
     # Extend to 2D
     Sv_vy = (S1D * Sv_vy_bc.B1D) ⊗ I(Nx)
-    Sv_vy_bc = (; Sv_vy_bc..., Bbc = (S1D * Sv_vy_bc.Btemp) ⊗ I(Nx))
 
     ## Assemble operators
-    if viscosity_model isa LaminarModel
-        Diffu = 1 / Re * (Dux * Su_ux + Duy * Su_uy)
-        Diffv = 1 / Re * (Dvx * Sv_vx + Dvy * Sv_vy)
-        Diff = blockdiag(Diffu, Diffv)
-    end
+    Diffu = 1 / Re * (Dux * Su_ux + Duy * Su_uy)
+    Diffv = 1 / Re * (Dvx * Sv_vx + Dvy * Sv_vy)
+    Diff = blockdiag(Diffu, Diffv)
 
     ## Group operators
     operators = (;
@@ -221,27 +194,8 @@ function operator_convection_diffusion(
         Cuy,
         Cvx,
         Cvy,
-        Su_ux,
-        Su_uy,
-        Sv_vx,
-        Sv_vy,
-        Su_ux_bc,
-        Su_uy_bc,
-        Sv_vx_bc,
-        Sv_vy_bc,
-        Dux,
-        Duy,
-        Dvx,
-        Dvy,
+        Diff,
     )
-
-    if viscosity_model isa LaminarModel
-        operators = (; operators..., Diff)
-    else
-        operators = (; operators..., Sv_uy, Su_vx)
-    end
-
-    operators = (; operators..., Su_vx_bc_lr, Su_vx_bc_lu, Sv_uy_bc_lr, Sv_uy_bc_lu)
 
     operators
 end

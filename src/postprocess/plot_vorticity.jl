@@ -4,16 +4,11 @@
 Plot vorticity field.
 """
 function plot_vorticity(setup, V, t; kwargs...)
-    (; grid, boundary_conditions) = setup
+    (; grid) = setup
     (; x, y, xlims, ylims) = grid
 
-    if all(==(:periodic), (boundary_conditions.u.x[1], boundary_conditions.v.y[1]))
-        xω = x
-        yω = y
-    else
-        xω = x[2:(end-1)]
-        yω = y[2:(end-1)]
-    end
+    xω = x
+    yω = y
 
     # Get fields
     ω = get_vorticity(V, t, setup)

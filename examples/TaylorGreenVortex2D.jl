@@ -70,7 +70,7 @@ real_time_plot(observer, setup)
 
 # Solve unsteady problem
 problem = UnsteadyProblem(setup, V₀, p₀, tlims);
-V, p = solve(problem, RK44(); Δt = 0.01, processors, pressure_solver, inplace = true)
+V, p = solve(problem, RK44(); Δt = 0.01, processors, pressure_solver)
 #md current_figure()
 
 # ## Post-process
@@ -88,6 +88,3 @@ plot_velocity(setup, V, t_end)
 
 # Plot vorticity
 plot_vorticity(setup, V, t_end)
-
-# Plot streamfunction
-## plot_streamfunction(setup, V, t_end)

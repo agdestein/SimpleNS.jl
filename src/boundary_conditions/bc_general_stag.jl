@@ -1,4 +1,4 @@
-function bc_general_stag(Nt, Nin, Nb, bc1, bc2, h1, h2)
+function bc_general_stag(Nt, Nin, Nb, h1, h2)
     # Total solution u is written as u = Bb*ub + Bin*uin
     # The boundary conditions can be written as Bbc*u = ybc
     # Then u can be written entirely in terms of uin and ybc as:

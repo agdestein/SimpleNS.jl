@@ -23,10 +23,6 @@ function create_initial_conditions(
     (; xu, yu, xv, yv, xpp, ypp, Ω⁻¹) = grid
     (; G, M) = operators
 
-    # Boundary conditions
-    bc_vectors = get_bc_vectors(setup, t)
-    (; yM) = bc_vectors
-
     # Allocate velocity and pressure
     u = zero(xu)[:]
     v = zero(xv)[:]
@@ -39,14 +35,14 @@ function create_initial_conditions(
 
     # Kinetic energy and momentum of initial velocity field
     # Iteration 1 corresponds to t₀ = 0 (for unsteady simulations)
-    maxdiv, umom, vmom, k = compute_conservation(V, t, setup; bc_vectors)
+    maxdiv, umom, vmom, k = compute_conservation(V, t, setup)
 
     if maxdiv > 1e-12
         @warn "Initial velocity field not (discretely) divergence free: $maxdiv.\n" *
               "Performing additional projection."
 
         # Make velocity field divergence free
-        f = M * V + yM
+        f = M * V
         Δp = pressure_poisson(pressure_solver, f)
         V .-= Ω⁻¹ .* (G * Δp)
     end

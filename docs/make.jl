@@ -21,18 +21,8 @@ bib = CitationBibliography(joinpath(@__DIR__, "references.bib"))
 
 # Generate examples
 examples = [
-    "Actuator (2D)" => "Actuator2D",
-    # "Actuator (3D)" => "Actuator3D",
-    "Backward Facing Step (2D)" => "BackwardFacingStep2D",
-    # "Backward Facing Step (3D)" => "BackwardFacingStep3D",
     "Decaying Turbulunce (2D)" => "DecayingTurbulence2D",
-    # "Decaying Turbulunce (3D)" => "DecayingTurbulence3D",
-    "Lid-Driven Cavity (2D)" => "LidDrivenCavity2D",
-    # "Lid-Driven Cavity (3D)" => "LidDrivenCavity3D",
-    "Planar Mixing (2D)" => "PlanarMixing2D",
-    "Shear Layer (2D)" => "ShearLayer2D",
-    # "Taylor-Green Vortex (2D)" => "TaylorGreenVortex2D",
-    "Taylor-Green Vortex (3D)" => "TaylorGreenVortex3D",
+    "Taylor-Green Vortex (2D)" => "TaylorGreenVortex2D",
 ]
 
 output = "generated"

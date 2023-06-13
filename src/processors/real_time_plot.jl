@@ -16,7 +16,6 @@ Available fieldnames are:
 
 - `:velocity`,
 - `:vorticity`,
-- `:streamfunction`,
 - `:pressure`.
 
 Available plot `type`s are:
@@ -32,30 +31,14 @@ function real_time_plot(
     type = heatmap,
     sleeptime = 0.001,
 )
-    (; boundary_conditions, grid) = setup
+    (; grid) = setup
     (; xlims, ylims, x, y, xp, yp) = grid
 
     if fieldname == :velocity
         xf, yf = xp, yp
     elseif fieldname == :vorticity
-        if all(==(:periodic), (boundary_conditions.u.x[1], boundary_conditions.v.y[1]))
-            xf = x
-            yf = y
-        else
-            xf = x[2:(end-1)]
-            yf = y[2:(end-1)]
-        end
-    elseif fieldname == :streamfunction
-        if boundary_conditions.u.x[1] == :periodic
-            xf = x
-        else
-            xf = x[2:(end-1)]
-        end
-        if boundary_conditions.v.y[1] == :periodic
-            yf = y
-        else
-            yf = y[2:(end-1)]
-        end
+        xf = x
+        yf = y
     elseif fieldname == :pressure
         error("Not implemented")
         xf, yf = xp, yp
@@ -71,8 +54,6 @@ function real_time_plot(
             map((u, v) -> √sum(u^2 + v^2), up, vp)
         elseif fieldname == :vorticity
             get_vorticity(V, t, setup)
-        elseif fieldname == :streamfunction
-            get_streamfunction(V, t, setup)
         elseif fieldname == :pressure
             error("Not implemented")
             reshape(copy(p), length(xp), length(yp))
