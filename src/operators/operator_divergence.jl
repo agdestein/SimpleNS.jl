@@ -36,7 +36,7 @@ function operator_divergence(grid)
     Bup = I(Nuy_in) ⊗ BMx
 
     # Boundary conditions
-    Mx_bc = bc_general(Nux_t, Nux_in, Nux_b, hx[1], hx[end])
+    Mx_bc = bc_general(Nux_t, Nux_in, Nux_b)
     Mx_bc = (; Mx_bc..., Bbc = mat_hy ⊗ (M1D * Mx_bc.Btemp))
 
     # Extend to 2D
@@ -57,7 +57,7 @@ function operator_divergence(grid)
     Bvp = BMy ⊗ I(Nvx_in)
 
     # Boundary conditions
-    My_bc = bc_general(Nvy_t, Nvy_in, Nvy_b, hy[1], hy[end])
+    My_bc = bc_general(Nvy_t, Nvy_in, Nvy_b)
     My_bc = (; My_bc..., Bbc = (M1D * My_bc.Btemp) ⊗ mat_hx)
 
     # Extend to 2D

@@ -48,13 +48,13 @@ function step(stepper::ExplicitRungeKuttaStepper, Δt)
 
         # Update velocity current stage by sum of Fᵢ's until this stage, weighted
         # with Butcher tableau coefficients. This gives uᵢ₊₁, and for i=s gives uᵢ₊₁
-        V = kV * A[i, 1:i]
+        ΔV = kV * A[i, 1:i]
 
         # Boundary conditions at tᵢ₊₁
         tᵢ = tₙ + c[i] * Δtₙ
 
         # Divergence of intermediate velocity field
-        f = (M * (Vₙ / Δtₙ + V)) / c[i]
+        f = (M * (Vₙ / Δtₙ + ΔV)) / c[i]
 
         # Solve the Poisson equation, but not for the first step if the boundary conditions are steady
         if i > 1
@@ -67,7 +67,7 @@ function step(stepper::ExplicitRungeKuttaStepper, Δt)
         Gp = G * p
 
         # Update velocity current stage, which is now divergence free
-        V = @. Vₙ + Δtₙ * (V - c[i] * Ω⁻¹ * Gp)
+        V = @. Vₙ + Δtₙ * (ΔV - c[i] * Ω⁻¹ * Gp)
     end
 
     # For steady bc we do an additional pressure solve

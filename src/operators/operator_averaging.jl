@@ -18,13 +18,7 @@ function operator_averaging(grid)
     A1D = spdiagm(Nux_t - 1, Nux_t, 0 => diag1, 1 => diag1)
 
     # Boundary conditions
-    Au_ux_bc = bc_general(
-        Nux_t,
-        Nux_in,
-        Nux_b,
-        hx[1],
-        hx[end],
-    )
+    Au_ux_bc = bc_general(Nux_t, Nux_in, Nux_b)
 
     # Extend to 2D
     Au_ux = I(Nuy_in) ⊗ (A1D * Au_ux_bc.B1D)
@@ -34,13 +28,7 @@ function operator_averaging(grid)
     A1D = spdiagm(Nuy_t - 1, Nuy_t, 0 => diag1, 1 => diag1)
 
     # Boundary conditions
-    Au_uy_bc = bc_general_stag(
-        Nuy_t,
-        Nuy_in,
-        Nuy_b,
-        hy[1],
-        hy[end],
-    )
+    Au_uy_bc = bc_general_stag(Nuy_t, Nuy_in, Nuy_b)
 
     # Extend to 2D
     Au_uy = (A1D * Au_uy_bc.B1D) ⊗ I(Nux_in)
@@ -52,13 +40,7 @@ function operator_averaging(grid)
     A1D = spdiagm(Nvx_t - 1, Nvx_t, 0 => diag1, 1 => diag1)
 
     # Boundary conditions
-    Av_vx_bc = bc_general_stag(
-        Nvx_t,
-        Nvx_in,
-        Nvx_b,
-        hx[1],
-        hx[end],
-    )
+    Av_vx_bc = bc_general_stag(Nvx_t, Nvx_in, Nvx_b)
 
     # Extend to 2D
     Av_vx = I(Nvy_in) ⊗ (A1D * Av_vx_bc.B1D)
@@ -68,13 +50,7 @@ function operator_averaging(grid)
     A1D = spdiagm(Nvy_t - 1, Nvy_t, 0 => diag1, 1 => diag1)
 
     # Boundary conditions
-    Av_vy_bc = bc_general(
-        Nvy_t,
-        Nvy_in,
-        Nvy_b,
-        hy[1],
-        hy[end],
-    )
+    Av_vy_bc = bc_general(Nvy_t, Nvy_in, Nvy_b)
 
     # Extend to 2D
     Av_vy = (A1D * Av_vy_bc.B1D) ⊗ I(Nvx_in)
