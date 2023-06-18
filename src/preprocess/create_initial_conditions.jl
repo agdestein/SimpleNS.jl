@@ -20,7 +20,7 @@ function create_initial_conditions(
     pressure_solver = DirectPressureSolver(setup),
 )
     (; grid, operators) = setup
-    (; xu, yu, xv, yv, xpp, ypp, Ω⁻¹) = grid
+    (; xu, yu, xv, yv, xpp, ypp, Ω) = grid
     (; G, M) = operators
 
     # Allocate velocity and pressure
@@ -44,7 +44,7 @@ function create_initial_conditions(
         # Make velocity field divergence free
         f = M * V
         Δp = pressure_poisson(pressure_solver, f)
-        V .-= Ω⁻¹ .* (G * Δp)
+        V .-= (G * Δp) ./ Ω
     end
 
     # Initial pressure: should in principle NOT be prescribed (will be calculated if p_initial)

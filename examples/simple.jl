@@ -5,58 +5,41 @@ if isdefined(@__MODULE__, :LanguageServer)          #src
     using .IncompressibleNavierStokes               #src
 end                                                 #src
 
-# # Decaying Homogeneous Isotropic Turbulence - 2D
-#
-# In this example we consider decaying homogeneous isotropic turbulence,
-# similar to the cases considered in [Kochkov2021](@cite) and
-# [Kurz2022](@cite). The initial velocity field is created randomly, but with a
-# specific energy spectrum. Due to viscous dissipation, the turbulent features
-# eventually group to form larger visible eddies.
-
-# We start by loading packages.
-# A [Makie](https://github.com/JuliaPlots/Makie.jl) plotting backend is needed
-# for plotting. `GLMakie` creates an interactive window (useful for real-time
-# plotting), but does not work when building this example on GitHub.
-# `CairoMakie` makes high-quality static vector-graphics plots.
-
 using FFTW
-#md using CairoMakie
-using GLMakie #!md
-using IncompressibleNavierStokes
-using LaTeXStrings
+using GLMakie
 using LinearAlgebra
 using SparseArrays
 
-# Case name for saving results
-name = "DecayingTurbulence2D"
+function f(U, p)
+    (ν, L) = p
+    u, v, p = eachslice(u; dims = 3)
+    nx, ny = size(u)
+    Δx = L / nx
+    Δy = L / ny
 
-# Viscosity model
-viscosity_model = LaminarModel(; Re = 1e4)
+    up0 = circshift(u, (-1, 0))
+    um0 = circshift(u, (1, 0))
+    u0p = circshift(u, (0, 1))
+    u0m = circshift(u, (0, -1))
+
+    vp0 = circshift(v, (-1, 0))
+    vm0 = circshift(v, (1, 0))
+    v0p = circshift(v, (0, 1))
+    v0m = circshift(v, (0, -1))
+
+    du = @. ((u + up0)^2/4 - (um0 + u)^2 / 4) / Δx + ((u + u0p) / 2 * (v))
+end
 
 # A 2D grid is a Cartesian product of two vectors
-Nx = 4
-Ny = 6
-xlims = (0.0, 1.0)
-ylims = (0.0, 4.0)
+n = 200
+x = LinRange(0.0, 1.0, n + 1)
+y = LinRange(0.0, 1.0, n + 1)
 
 # Build setup and assemble operators
-setup = Setup(Nx, Ny, xlims, ylims; viscosity_model);
-
-g = setup.grid
-o = setup.operators
-
-plotmat(a) = heatmap(reverse(a'; dims = 2))
-plotmat(a::SparseMatrixCSC) = plotmat(Matrix(a))
-
-plotmat(o.A)
-plotmat(o.M)
-
-# Since the grid is uniform and identical for x and y, we may use a specialized
-# Fourier pressure solver
-pressure_solver = FourierPressureSolver(setup)
+setup = Setup(x, y; viscosity_model);
 
 # Initial conditions
-K = Nx ÷ 2
+K = n ÷ 2
 A = 1e6
 σ = 30
 ## σ = 10
@@ -90,14 +73,15 @@ p = pressure_additional_solve(pressure_solver, V, p, 0.0, setup);
 V₀, p₀ = V, p
 
 # Time interval
-t_start, t_end = tlims = (0.0, 1.0)
+t_start, t_end = tlims = (0.0, 0.2)
 
 # Iteration processors
 logger = Logger()
 observer = StateObserver(1, V₀, p₀, t_start)
 writer = VTKWriter(; nupdate = 10, dir = "output/$name", filename = "solution")
 ## processors = [logger, observer, writer]
-processors = [logger, observer]
+# processors = [logger, observer]
+processors = [logger]
 
 # Real time plot
 rtp = real_time_plot(observer, setup)
@@ -135,9 +119,21 @@ axislegend(ax)
 espec
 
 # Solve unsteady problem
-problem = UnsteadyProblem(setup, V₀, p₀, tlims);
+problem = UnsteadyProblem(setup, V₀, p₀, (0.0, 0.1));
 # problem = UnsteadyProblem(setup, V, p, tlims);
-V, p = solve(problem, RK44(); Δt = 0.001, processors, pressure_solver);
+@time solve(
+    problem,
+    RK44();
+    Δt = 0.001,
+    processors,
+    # pressure_solver = DirectPressureSolver(setup), # 4.2
+    # pressure_solver = CGPressureSolver(setup;
+    #     abstol = 10^-10,
+    #     reltol = 10^-8,
+    #     maxiter = 10,
+    # ), # 3.0
+    pressure_solver = FourierPressureSolver(setup), # 2.44
+);
 
 # Real time plot
 rtp

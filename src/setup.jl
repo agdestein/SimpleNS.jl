@@ -1,6 +1,6 @@
 """
     Setup(grid, viscosity_model, force, operators)
-
+`
 Simulation setup.
 """
 struct Setup{
@@ -16,7 +16,7 @@ end
 
 """
     Setup(
-        x, y;
+        Nx, Ny, Lx, Ly;
         viscosity_model = LaminarModel(; Re = 1000.0),
         bodyforce_u = (x, y) -> 0.0,
         bodyforce_v = (x, y) -> 0.0,
@@ -26,14 +26,13 @@ end
 Create 2D setup.
 """
 function Setup(
-    x,
-    y;
+    Nx, Ny, xlims, ylims;
     viscosity_model = LaminarModel(; Re = 1000.0),
     bodyforce_u = (x, y) -> 0.0,
     bodyforce_v = (x, y) -> 0.0,
     steady_force = true,
 )
-    grid = Grid(x, y)
+    grid = Grid(Nx, Ny, xlims, ylims)
     if steady_force
         force = SteadyBodyForce(bodyforce_u, bodyforce_v, grid)
     else

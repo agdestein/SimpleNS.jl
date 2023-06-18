@@ -4,7 +4,7 @@
 Construct postprocessing operators such as vorticity.
 """
 function operator_postprocessing(grid)
-    (; Nx, Ny, gx, gy, gxd, gyd) = grid
+    (; Nx, Ny, gxd, gyd) = grid
 
     # For entirely periodic BC, covering entire mesh
 

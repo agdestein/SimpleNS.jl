@@ -9,7 +9,7 @@ in the Adams-Bashforth part of the method.
 function step(stepper::AdamsBashforthCrankNicolsonStepper, Δt)
     (; method, setup, pressure_solver, n, V, p, t, Vₙ, pₙ, tₙ) = stepper
     (; viscosity_model, force, grid, operators) = setup
-    (; NV, Ω⁻¹) = grid
+    (; NV, Ω) = grid
     (; G, M) = operators
     (; Diff) = operators
     (; p_add_solve, α₁, α₂, θ) = method
@@ -43,7 +43,7 @@ function step(stepper::AdamsBashforthCrankNicolsonStepper, Δt)
     d = Diff * V
 
     # Right hand side of the momentum equation update
-    Rr = @. Vₙ + Ω⁻¹ * Δt * (-(α₁ * cₙ + α₂ * cₙ₋₁) + (1 - θ) * d + b - Gpₙ)
+    Rr = @. Vₙ + 1 / Ω * Δt * (-(α₁ * cₙ + α₂ * cₙ₋₁) + (1 - θ) * d + b - Gpₙ)
 
     # Implicit time-stepping for diffusion
     if viscosity_model isa LaminarModel
@@ -62,7 +62,7 @@ function step(stepper::AdamsBashforthCrankNicolsonStepper, Δt)
     Δp = pressure_poisson(pressure_solver, f)
 
     # Update velocity field
-    V -= Δt .* Ω⁻¹ .* (G * Δp .+ y_Δp)
+    V -= Δt .* 1 ./ Ω .* (G * Δp .+ y_Δp)
 
     # First order pressure:
     p = pₙ .+ Δp

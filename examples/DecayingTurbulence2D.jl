@@ -43,7 +43,7 @@ setup = Setup(x, y; viscosity_model);
 
 # Since the grid is uniform and identical for x and y, we may use a specialized
 # Fourier pressure solver
-pressure_solver = FourierPressureSolver(setup)
+pressure_solver = FourierPressureSolver(setup);
 
 # Initial conditions
 K = n ÷ 2
@@ -70,24 +70,25 @@ f = setup.operators.M * V
 p = zero(f)
 
 # Make velocity field divergence free
-(; Ω⁻¹) = setup.grid;
+(; Ω) = setup.grid;
 (; G, M) = setup.operators;
 f = M * V;
 Δp = pressure_poisson(pressure_solver, f);
-V .-= Ω⁻¹ .* (G * Δp);
+V .-= (G * Δp ./  Ω);
 p = pressure_additional_solve(pressure_solver, V, p, 0.0, setup);
 
 V₀, p₀ = V, p
 
 # Time interval
-t_start, t_end = tlims = (0.0, 1.0)
+t_start, t_end = tlims = (0.0, 0.2)
 
 # Iteration processors
 logger = Logger()
 observer = StateObserver(1, V₀, p₀, t_start)
 writer = VTKWriter(; nupdate = 10, dir = "output/$name", filename = "solution")
 ## processors = [logger, observer, writer]
-processors = [logger, observer]
+# processors = [logger, observer]
+processors = [logger]
 
 # Real time plot
 rtp = real_time_plot(observer, setup)
@@ -125,9 +126,21 @@ axislegend(ax)
 espec
 
 # Solve unsteady problem
-problem = UnsteadyProblem(setup, V₀, p₀, tlims);
+problem = UnsteadyProblem(setup, V₀, p₀, (0.0, 0.1));
 # problem = UnsteadyProblem(setup, V, p, tlims);
-V, p = solve(problem, RK44(); Δt = 0.001, processors, pressure_solver);
+@time solve(
+    problem,
+    RK44();
+    Δt = 0.001,
+    processors,
+    # pressure_solver = DirectPressureSolver(setup), # 4.2
+    # pressure_solver = CGPressureSolver(setup;
+    #     abstol = 10^-10,
+    #     reltol = 10^-8,
+    #     maxiter = 10,
+    # ), # 3.0
+    pressure_solver = FourierPressureSolver(setup), # 2.44
+);
 
 # Real time plot
 rtp

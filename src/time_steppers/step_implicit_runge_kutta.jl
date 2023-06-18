@@ -10,7 +10,7 @@ function step(stepper::ImplicitRungeKuttaStepper, Δt)
     # TODO: Implement out-of-place IRK
     (; method, setup, pressure_solver, n, V, p, t, Vₙ, pₙ, tₙ) = stepper
     (; grid, operators) = setup
-    (; NV, Np, Ω⁻¹) = grid
+    (; NV, Np, Ω) = grid
     (; G, M) = operators
     (; A, b, c, p_add_solve, maxiter, abstol, newton_type) = method
 
@@ -112,7 +112,7 @@ function step(stepper::ImplicitRungeKuttaStepper, Δt)
     end
 
     # Solution at new time step with b-coefficients of RK method
-    V = Vₙ .+ Δtₙ .* Ω⁻¹ .* (b_ext * Fⱼ)
+    V = Vₙ .+ Δtₙ .* (b_ext * Fⱼ) ./ Ω 
 
     # Make V satisfy the incompressibility constraint at n+1; this is only needed when the
     # boundary conditions are time-dependent. For stiffly accurate methods, this can also

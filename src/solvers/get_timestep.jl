@@ -6,7 +6,7 @@ Estimate time step based on eigenvalues of operators, using Gershgorin.
 function get_timestep(stepper::TimeStepper{M,T,2}, cfl) where {M,T}
     (; setup, method, V) = stepper
     (; grid, operators) = setup
-    (; NV, indu, indv, Ω⁻¹) = grid
+    (; NV, indu, indv, Ω) = grid
     (; Diff) = operators
     (; Cux, Cuy, Cvx, Cvy) = operators
     (; Au_ux, Au_uy, Av_vx, Av_vy) = operators
@@ -25,7 +25,7 @@ function get_timestep(stepper::TimeStepper{M,T,2}, cfl) where {M,T}
             Cvx * spdiagm(Iu_vx * uₕ) * Av_vx +
             Cvy * spdiagm(Iv_vy * vₕ) * Av_vy
         C = blockdiag(Cu, Cv)
-        test = spdiagm(Ω⁻¹) * C
+        test = spdiagm(1 ./ Ω) * C
         sum_conv = abs.(test) * ones(NV) - diag(abs.(test)) - diag(test)
         λ_conv = maximum(sum_conv)
 
@@ -34,7 +34,7 @@ function get_timestep(stepper::TimeStepper{M,T,2}, cfl) where {M,T}
         Δt_conv = lambda_conv_max(method) / λ_conv
 
         ## Diffusive part
-        test = Diagonal(Ω⁻¹) * Diff
+        test = Diagonal(1 ./ Ω) * Diff
         sum_diff = abs.(test) * ones(NV) - diag(abs.(test)) - diag(test)
         λ_diff = maximum(sum_diff)
 

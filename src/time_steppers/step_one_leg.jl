@@ -8,7 +8,7 @@ function step(stepper::OneLegStepper, Δt)
     (; p_add_solve, β) = method
     (; grid, operators) = setup
     (; G, M) = operators
-    (; Ω⁻¹) = grid
+    (; Ω) = grid
 
     # Update current solution (does not depend on previous step size)
     Δtₙ₋₁ = t - tₙ
@@ -31,7 +31,7 @@ function step(stepper::OneLegStepper, Δt)
 
     # Take a time step with this right-hand side, this gives an intermediate velocity field
     # (not divergence free)
-    V = @. (2β * Vₙ - (β - 1 // 2) * Vₙ₋₁ + Δtₙ * Ω⁻¹ * F) / (β + 1 // 2)
+    V = @. (2β * Vₙ - (β - 1 // 2) * Vₙ₋₁ + Δtₙ  * F / Ω) / (β + 1 // 2)
 
     # Adapt time step for pressure calculation
     Δtᵦ = Δtₙ / (β + 1 // 2)
@@ -44,7 +44,7 @@ function step(stepper::OneLegStepper, Δt)
     GΔp = G * Δp
 
     # Update velocity field
-    V = @. V - Δtᵦ * Ω⁻¹ * GΔp
+    V = @. V - Δtᵦ * GΔp / Ω
 
     # Update pressure (second order)
     p = @. 2pₙ - pₙ₋₁ + 4 // 3 * Δp

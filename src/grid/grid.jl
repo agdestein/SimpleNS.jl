@@ -40,7 +40,6 @@ Base.@kwdef struct Grid{T}
 
     Ωp::Vector{T} = T[]
     Ω::Vector{T} = T[]
-    Ω⁻¹::Vector{T} = T[]
 
     # For order4
     Ωux::Vector{T} = T[]
@@ -54,8 +53,7 @@ Base.@kwdef struct Grid{T}
     hyi::Vector{T} = T[]
     hxd::Vector{T} = T[]
     hyd::Vector{T} = T[]
-    gx::Vector{T} = T[]
-    gy::Vector{T} = T[]
+
     gxi::Vector{T} = T[]
     gyi::Vector{T} = T[]
     gxd::Vector{T} = T[]
@@ -63,9 +61,6 @@ Base.@kwdef struct Grid{T}
 
     Buvy::SparseMatrixCSC{T,Int} = spzeros(T, 0, 0)
     Bvux::SparseMatrixCSC{T,Int} = spzeros(T, 0, 0)
-
-    xin::Vector{T} = T[]
-    yin::Vector{T} = T[]
 
     # Separate grids for u, v, and p
     xu::Matrix{T} = zeros(T, 0, 0)
@@ -83,23 +78,24 @@ Base.@kwdef struct Grid{T}
 end
 
 """
-    Grid(x, y; T = eltype(x))
+    Grid(Nx, Ny, xlims, ylims; T = eltype(x))
 
 Create nonuniform Cartesian box mesh `x` × `y`.
 """
-function Grid(x, y; T = eltype(x))
-    Nx = length(x) - 1
-    Ny = length(y) - 1
-    xlims = (x[1], x[end])
-    ylims = (y[1], y[end])
+function Grid(Nx, Ny, xlims, ylims; T = eltype(promote(xlims...)))
+    x = LinRange(xlims..., Nx + 1)
+    y = LinRange(ylims..., Ny + 1)
+
+    Δx = (xlims[2] - xlims[1]) / Nx
+    Δy = (ylims[2] - ylims[1]) / Ny
 
     # Pressure positions
     xp = (x[1:(end-1)] + x[2:end]) / 2
     yp = (y[1:(end-1)] + y[2:end]) / 2
 
     # Distance between velocity points
-    hx = diff(x)
-    hy = diff(y)
+    hx = fill(Δx, Nx)
+    hy = fill(Δy, Ny)
 
     # Distance between pressure points
     gx = zeros(Nx + 1)
@@ -151,7 +147,7 @@ function Grid(x, y; T = eltype(x))
     # Y-dir
     Nvy_b = 2               # Boundary points
     Nvy_in = Ny             # Inner points
-    Nvy_t = Nvy_in + Nvy_b # Total number
+    Nvy_t = Nvy_in + Nvy_b  # Total number
 
     # Total number
     Nv = Nvx_in * Nvy_in
@@ -164,9 +160,7 @@ function Grid(x, y; T = eltype(x))
     ## X-direction
 
     # gxd: differentiation
-    gxd = copy(gx)
-    gxd[1] = hx[1]
-    gxd[end] = hx[end]
+    gxd = fill(Δx, Nx + 1)
 
     # hxi: integration and hxd: differentiation
     # Map to find suitable size
@@ -174,13 +168,12 @@ function Grid(x, y; T = eltype(x))
 
     # Restrict Nx+2 to Nux_in+1 points
     xin = x[1:(end-1)]
-    hxd = [hx[end]; hx]
-    gxi = [gx[1] + gx[end]; gx[2:(end-1)]]
-    gxd[1] = (hx[1] + hx[end]) / 2
-    gxd[end] = (hx[1] + hx[end]) / 2
-    diagpos = 0
 
-    Bmap = spdiagm(Nux_in + 1, Nx + 2, diagpos => ones(Nux_in + 1))
+    hxd = fill(Δx, Nx + 1)
+
+    gxi = copy(hx)
+
+    diagpos = 0
 
     # Matrix to map from Nvx_t-1 to Nux_in points
     # (used in interpolation, convection_diffusion, viscosity)
@@ -188,24 +181,21 @@ function Grid(x, y; T = eltype(x))
 
     ## Y-direction
 
-    # Gyi: integration and gyd: differentiation
-    gyd = copy(gy)
-    gyd[1] = hy[1]
-    gyd[end] = hy[end]
+    # gyi: integration and gyd: differentiation
+    gyd = fill(Δy, Ny + 1)
 
-    # Hyi: integration and hyd: differentiation
+    # hyi: integration and hyd: differentiation
     # Map to find suitable size
     hyi = copy(hy)
 
     # Restrict Ny+2 to Nvy_in+1 points
     yin = y[1:(end-1)]
-    hyd = [hy[end]; hy]
-    gyi = [gy[1] + gy[end]; gy[2:(end-1)]]
-    gyd[1] = (hy[1] + hy[end]) / 2
-    gyd[end] = (hy[1] + hy[end]) / 2
-    diagpos = 0
 
-    Bmap = spdiagm(Nvy_in + 1, Ny + 2, diagpos => ones(Nvy_in + 1))
+    hyd = fill(Δy, Ny + 1)
+
+    gyi = copy(hy)
+
+    diagpos = 0
 
     # Matrix to map from Nuy_t-1 to Nvy_in points
     # (used in interpolation, convection_diffusion)
@@ -234,7 +224,6 @@ function Grid(x, y; T = eltype(x))
     Ωvy = hyd ⊗ hxi
 
     Ω = [Ωu; Ωv]
-    Ω⁻¹ = 1 ./ Ω
 
     # Metrics that can be useful for initialization:
     xu = ones(1, Nuy_in) ⊗ xin
@@ -280,7 +269,6 @@ function Grid(x, y; T = eltype(x))
         NV,
         Ωp,
         Ω,
-        Ω⁻¹,
         Ωux,
         Ωvx,
         Ωuy,
@@ -295,8 +283,6 @@ function Grid(x, y; T = eltype(x))
         gyd,
         Buvy,
         Bvux,
-        xin,
-        yin,
         xu,
         yu,
         xv,

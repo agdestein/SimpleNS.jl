@@ -8,7 +8,7 @@ function operator_divergence(grid)
     (; Nux_in, Nux_b, Nux_t, Nuy_in) = grid
     (; Nvx_in, Nvy_in, Nvy_b, Nvy_t) = grid
     (; hx, hy) = grid
-    (; Ω⁻¹) = grid
+    (; Ω) = grid
 
     ## Divergence operator M
 
@@ -80,7 +80,7 @@ function operator_divergence(grid)
     # Only the right hand side vector changes, so the pressure matrix can be set up outside the time-stepping-loop.
 
     # Laplace = div grad
-    A = M * Diagonal(Ω⁻¹) * G
+    A = M * Diagonal(1 ./ Ω) * G
 
     # Check if all the row sums of the pressure matrix are zero, which
     # should be the case if there are no pressure boundary conditions

@@ -19,7 +19,7 @@ struct DirectPressureSolver{T,F<:Factorization{T}} <: AbstractPressureSolver{T}
 end
 
 """
-    CGPressureSolver(abstol, reltol, maxiter)
+    CGPressureSolver(setup; abstol, reltol, maxiter)
 
 Conjugate gradients iterative pressure solver.
 """
@@ -47,8 +47,6 @@ Fourier transform pressure solver for periodic domains.
 """
 struct FourierPressureSolver{T} <: AbstractPressureSolver{T}
     Ahat::Matrix{Complex{T}}
-    phat::Matrix{Complex{T}}
-    fhat::Matrix{Complex{T}}
 end
 
 """
@@ -56,7 +54,7 @@ end
 
 Build Fourier pressure solver from setup.
 """
-function FourierPressureSolver(setup)
+function FourierPressureSolver(setup::Setup)
     (; grid, operators) = setup
     (; hx, hy, Npx, Npy) = grid
     (; A) = operators
@@ -80,9 +78,5 @@ function FourierPressureSolver(setup)
 
     Ahat = complex(Ahat)
 
-    # Placeholders for intermediate results
-    phat = similar(Ahat)
-    fhat = similar(Ahat)
-
-    FourierPressureSolver(Ahat, phat, fhat)
+    FourierPressureSolver(Ahat)
 end

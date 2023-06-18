@@ -9,7 +9,7 @@ manner via the `u_bc` and `v_bc` functions.
 function step(stepper::ExplicitRungeKuttaStepper, Δt)
     (; method, setup, pressure_solver, n, V, p, t, Vₙ, pₙ, tₙ) = stepper
     (; grid, operators) = setup
-    (; Ω⁻¹) = grid
+    (; Ω) = grid
     (; G, M) = operators
     (; A, b, c, p_add_solve) = method
 
@@ -43,7 +43,7 @@ function step(stepper::ExplicitRungeKuttaStepper, Δt)
 
         # Store right-hand side of stage i
         # Remove the -G*p contribution (but not y_p)
-        kVᵢ = Ω⁻¹ .* (F + G * p)
+        kVᵢ = (F + G * p) ./ Ω
         kV = [kV kVᵢ]
 
         # Update velocity current stage by sum of Fᵢ's until this stage, weighted
@@ -67,7 +67,7 @@ function step(stepper::ExplicitRungeKuttaStepper, Δt)
         Gp = G * p
 
         # Update velocity current stage, which is now divergence free
-        V = @. Vₙ + Δtₙ * (ΔV - c[i] * Ω⁻¹ * Gp)
+        V = @. Vₙ + Δtₙ * (ΔV - c[i] * Gp / Ω )
     end
 
     # For steady bc we do an additional pressure solve
