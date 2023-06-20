@@ -1,13 +1,13 @@
 """
-    plot_velocity(setup, V, t; kwargs...)
+    plot_velocity(setup, V; kwargs...)
 
 Plot velocity.
 """
-function plot_velocity(setup, V, t; kwargs...)
+function plot_velocity(setup, V; kwargs...)
     (; xp, yp, xlims, ylims) = setup.grid
 
     # Get velocity at pressure points
-    up, vp = get_velocity(V, t, setup)
+    up, vp = get_velocity(V, setup)
     qp = map((u, v) -> √(u^2 + v^2), up, vp)
 
     # Levels

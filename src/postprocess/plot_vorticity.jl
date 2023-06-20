@@ -1,9 +1,9 @@
 """
-    plot_vorticity(setup, V, t; kwargs...)
+    plot_vorticity(setup, V; kwargs...)
 
 Plot vorticity field.
 """
-function plot_vorticity(setup, V, t; kwargs...)
+function plot_vorticity(setup, V; kwargs...)
     (; grid) = setup
     (; x, y, xlims, ylims) = grid
 
@@ -11,7 +11,7 @@ function plot_vorticity(setup, V, t; kwargs...)
     yω = y
 
     # Get fields
-    ω = get_vorticity(V, t, setup)
+    ω = get_vorticity(V, setup)
 
     # Levels
     μ, σ = mean(ω), std(ω)

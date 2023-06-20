@@ -6,7 +6,6 @@ Construct averaging operators.
 function operator_averaging(grid)
     (; Nux_in, Nux_b, Nux_t, Nuy_in, Nuy_b, Nuy_t) = grid
     (; Nvx_in, Nvx_b, Nvx_t, Nvy_in, Nvy_b, Nvy_t) = grid
-    (; hx, hy) = grid
 
     # Averaging weight:
     weight = 1 / 2

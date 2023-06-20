@@ -32,11 +32,7 @@ y = LinRange(0, 2π, n + 1)
 plot_grid(x, y)
 
 # Build setup and assemble operators
-setup = Setup(x, y; viscosity_model);
-
-# Since the grid is uniform and identical for x and y, we may use a specialized
-# Fourier pressure solver
-pressure_solver = FourierPressureSolver(setup)
+setup = get_setup(x, y; viscosity_model);
 
 # Time interval
 t_start, t_end = tlims = (0.0, 10.0)
@@ -46,17 +42,11 @@ initial_velocity_u(x, y) = -sin(x)cos(y)
 initial_velocity_v(x, y) = cos(x)sin(y)
 initial_pressure(x, y) = 1 / 4 * (cos(2x) + cos(2y))
 V₀, p₀ = create_initial_conditions(
-    setup,
-    t_start;
+    setup;
     initial_velocity_u,
     initial_velocity_v,
     initial_pressure,
-    pressure_solver,
 );
-
-# Solve steady state problem
-problem = SteadyStateProblem(setup, V₀, p₀);
-V, p = solve(problem; npicard = 2);
 
 # Iteration processors
 logger = Logger()
@@ -69,8 +59,7 @@ processors = [logger, observer]
 real_time_plot(observer, setup)
 
 # Solve unsteady problem
-problem = UnsteadyProblem(setup, V₀, p₀, tlims);
-V, p = solve(problem, RK44(); Δt = 0.01, processors, pressure_solver)
+V, p = solve(V₀, p₀, tlims; setup, Δt = 0.01, processors)
 #md current_figure()
 
 # ## Post-process
@@ -78,13 +67,13 @@ V, p = solve(problem, RK44(); Δt = 0.01, processors, pressure_solver)
 # We may visualize or export the computed fields `(V, p)`
 
 # Export to VTK
-save_vtk(V, p, t_end, setup, "output/solution")
+save_vtk(V, p, setup, "output/solution")
 
 # Plot pressure
 plot_pressure(setup, p)
 
 # Plot velocity
-plot_velocity(setup, V, t_end)
+plot_velocity(setup, V)
 
 # Plot vorticity
-plot_vorticity(setup, V, t_end)
+plot_vorticity(setup, V)

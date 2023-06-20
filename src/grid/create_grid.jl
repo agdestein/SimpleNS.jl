@@ -1,88 +1,9 @@
 """
-    Grid{T}()
-
-Nonuniform Cartesian grid with floating point type `T`.
-"""
-Base.@kwdef struct Grid{T}
-    Nx::Int = 10                             # Number of x-volumes
-    Ny::Int = 10                             # Number of y-volumes
-    xlims::Tuple{T,T} = (0, 1)               # Horizontal limits (left, right)
-    ylims::Tuple{T,T} = (0, 1)               # Vertical limits (bottom, top)
-
-    x::Vector{T} = T[]                       # Vector of x-points
-    y::Vector{T} = T[]                       # Vector of y-points
-    xp::Vector{T} = T[]
-    yp::Vector{T} = T[]
-
-    # Number of pressure points in each dimension
-    Npx::Int = 0
-    Npy::Int = 0
-
-    Nux_in::Int = 0
-    Nux_b::Int = 0
-    Nux_t::Int = 0
-    Nuy_in::Int = 0
-    Nuy_b::Int = 0
-    Nuy_t::Int = 0
-
-    Nvx_in::Int = 0
-    Nvx_b::Int = 0
-    Nvx_t::Int = 0
-    Nvy_in::Int = 0
-    Nvy_b::Int = 0
-    Nvy_t::Int = 0
-
-    # Number of points in solution vector
-    Nu::Int = 0
-    Nv::Int = 0
-    NV::Int = 0
-    Np::Int = 0
-
-    Ωp::Vector{T} = T[]
-    Ω::Vector{T} = T[]
-
-    # For order4
-    Ωux::Vector{T} = T[]
-    Ωvx::Vector{T} = T[]
-    Ωuy::Vector{T} = T[]
-    Ωvy::Vector{T} = T[]
-
-    hx::Vector{T} = T[]
-    hy::Vector{T} = T[]
-    hxi::Vector{T} = T[]
-    hyi::Vector{T} = T[]
-    hxd::Vector{T} = T[]
-    hyd::Vector{T} = T[]
-
-    gxi::Vector{T} = T[]
-    gyi::Vector{T} = T[]
-    gxd::Vector{T} = T[]
-    gyd::Vector{T} = T[]
-
-    Buvy::SparseMatrixCSC{T,Int} = spzeros(T, 0, 0)
-    Bvux::SparseMatrixCSC{T,Int} = spzeros(T, 0, 0)
-
-    # Separate grids for u, v, and p
-    xu::Matrix{T} = zeros(T, 0, 0)
-    xv::Matrix{T} = zeros(T, 0, 0)
-    yu::Matrix{T} = zeros(T, 0, 0)
-    yv::Matrix{T} = zeros(T, 0, 0)
-    xpp::Matrix{T} = zeros(T,0, 0)
-    ypp::Matrix{T} = zeros(T,0, 0)
-
-    # Ranges
-    indu::UnitRange{Int} = 0:0
-    indv::UnitRange{Int} = 0:0
-    indV::UnitRange{Int} = 0:0
-    indp::UnitRange{Int} = 0:0
-end
-
-"""
-    Grid(Nx, Ny, xlims, ylims; T = eltype(x))
+    create_grid(Nx, Ny, xlims, ylims)
 
 Create nonuniform Cartesian box mesh `x` × `y`.
 """
-function Grid(Nx, Ny, xlims, ylims; T = eltype(promote(xlims...)))
+function create_grid(Nx, Ny, xlims, ylims)
     x = LinRange(xlims..., Nx + 1)
     y = LinRange(ylims..., Ny + 1)
 
@@ -96,17 +17,6 @@ function Grid(Nx, Ny, xlims, ylims; T = eltype(promote(xlims...)))
     # Distance between velocity points
     hx = fill(Δx, Nx)
     hy = fill(Δy, Ny)
-
-    # Distance between pressure points
-    gx = zeros(Nx + 1)
-    gx[1] = hx[1] / 2
-    gx[2:Nx] = (hx[1:(Nx-1)] + hx[2:Nx]) / 2
-    gx[Nx+1] = hx[end] / 2
-
-    gy = zeros(Ny + 1)
-    gy[1] = hy[1] / 2
-    gy[2:Ny] = (hy[1:(Ny-1)] + hy[2:Ny]) / 2
-    gy[Ny+1] = hy[end] / 2
 
     # Number of pressure points
     Npx = Nx
@@ -247,8 +157,11 @@ function Grid(Nx, Ny, xlims, ylims; T = eltype(promote(xlims...)))
     indV = 1:NV
     indp = NV .+ (1:Np)
 
-    ## Store quantities in the structure
-    params = (;
+    (;
+        xlims,
+        ylims,
+        Nx,
+        Ny,
         Npx,
         Npy,
         Np,
@@ -273,6 +186,8 @@ function Grid(Nx, Ny, xlims, ylims; T = eltype(promote(xlims...)))
         Ωvx,
         Ωuy,
         Ωvy,
+        hx,
+        hy,
         hxi,
         hyi,
         hxd,
@@ -283,10 +198,14 @@ function Grid(Nx, Ny, xlims, ylims; T = eltype(promote(xlims...)))
         gyd,
         Buvy,
         Bvux,
+        x,
+        y,
         xu,
         yu,
         xv,
         yv,
+        xp,
+        yp,
         xpp,
         ypp,
         indu,
@@ -294,6 +213,4 @@ function Grid(Nx, Ny, xlims, ylims; T = eltype(promote(xlims...)))
         indV,
         indp,
     )
-
-    Grid{T}(; Nx, Ny, xlims, ylims, x, y, xp, yp, hx, hy, gx, gy, params...)
 end

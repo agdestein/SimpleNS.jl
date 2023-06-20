@@ -6,7 +6,7 @@ Plot nonuniform Cartesian grid.
 """
 function plot_grid end
 
-plot_grid(g::Grid) = plot_grid(g.x, g.y)
+plot_grid(g) = plot_grid(g.x, g.y)
 
 plot_grid(x, y) = wireframe(
     x,

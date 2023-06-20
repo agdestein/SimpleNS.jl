@@ -1,9 +1,9 @@
 """
-    get_vorticity(V, t, setup)
+    get_vorticity(V, setup)
 
 Get vorticity from velocity field.
 """
-function get_vorticity(V, t, setup)
+function get_vorticity(V, setup)
     (; grid) = setup
     (; Nx, Ny) = grid
 
@@ -12,16 +12,16 @@ function get_vorticity(V, t, setup)
 
     ω = zeros(Nωx, Nωy)
 
-    vorticity!(ω, V, t, setup)
+    vorticity!(ω, V, setup)
 end
 
 """
-    vorticity!(ω, V, t, setup)
+    vorticity!(ω, V, setup)
 
 Compute vorticity values at pressure midpoints.
 This should be consistent with `operator_postprocessing.jl`.
 """
-function vorticity!(ω, V, t, setup)
+function vorticity!(ω, V, setup)
     (; grid, operators) = setup
     (; indu, indv, Nux_in, Nvy_in, Nx, Ny) = grid
     (; Wv_vx, Wu_uy) = operators

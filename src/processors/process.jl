@@ -25,7 +25,7 @@ function process!(writer::VTKWriter, stepper)
 
     tformat = replace(string(t), "." => "p")
     vtk_grid("$(writer.dir)/$(writer.filename)_t=$tformat", coords...) do vtk
-        vels = get_velocity(V, t, setup)
+        vels = get_velocity(V, setup)
 
         # ParaView prefers 3D vectors. Add zero z-component.
         wp = zeros(size(vels[1]))

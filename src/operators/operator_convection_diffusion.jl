@@ -1,16 +1,14 @@
 """
-    operator_convection_diffusion(grid, viscosity_model)
+    operator_convection_diffusion(grid)
 
 Construct convection and diffusion operators.
 """
-function operator_convection_diffusion(grid, viscosity_model)
+function operator_convection_diffusion(grid)
     (; Nx, Ny) = grid
     (; Nux_in, Nux_b, Nux_t, Nuy_in, Nuy_b, Nuy_t) = grid
     (; Nvx_in, Nvx_b, Nvx_t, Nvy_in, Nvy_b, Nvy_t) = grid
     (; hxi, hyi, hxd, hyd) = grid
     (; gxi, gyi, gxd, gyd) = grid
-    (; Buvy, Bvux) = grid
-    (; Re) = viscosity_model
 
     ## Convection (differencing) operator Cu
 
@@ -91,12 +89,10 @@ function operator_convection_diffusion(grid, viscosity_model)
     Sv_vy = (S1D * Sv_vy_bc.B1D) ⊗ I(Nx)
 
     ## Assemble operators
-    Diffu = 1 / Re * (Dux * Su_ux + Duy * Su_uy)
-    Diffv = 1 / Re * (Dvx * Sv_vx + Dvy * Sv_vy)
+    Diffu = Dux * Su_ux + Duy * Su_uy
+    Diffv = Dvx * Sv_vx + Dvy * Sv_vy
     Diff = blockdiag(Diffu, Diffv)
 
     ## Group operators
-    operators = (; Cux, Cuy, Cvx, Cvy, Diff)
-
-    operators
+    (; Cux, Cuy, Cvx, Cvy, Diff)
 end

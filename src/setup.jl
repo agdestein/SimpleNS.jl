@@ -1,43 +1,21 @@
 """
-    Setup(grid, viscosity_model, force, operators)
-`
-Simulation setup.
-"""
-struct Setup{
-    T,
-    V<:AbstractViscosityModel{T},
-    F<:AbstractBodyForce{T},
-}
-    grid::Grid{T}
-    viscosity_model::V
-    force::F
-    operators::Operators{T}
-end
-
-"""
-    Setup(
+    get_setup(
         Nx, Ny, Lx, Ly;
-        viscosity_model = LaminarModel(; Re = 1000.0),
         bodyforce_u = (x, y) -> 0.0,
         bodyforce_v = (x, y) -> 0.0,
-        steady_force = true,
+        viscosity = 1 / 1000,
     )
 
 Create 2D setup.
 """
-function Setup(
+function get_setup(
     Nx, Ny, xlims, ylims;
-    viscosity_model = LaminarModel(; Re = 1000.0),
     bodyforce_u = (x, y) -> 0.0,
     bodyforce_v = (x, y) -> 0.0,
-    steady_force = true,
+    viscosity = 1 / 1000,
 )
-    grid = Grid(Nx, Ny, xlims, ylims)
-    if steady_force
-        force = SteadyBodyForce(bodyforce_u, bodyforce_v, grid)
-    else
-        force = UnsteadyBodyForce(bodyforce_u, bodyforce_v, grid)
-    end
-    operators = Operators(grid, viscosity_model)
-    Setup(grid, viscosity_model, force, operators)
+    grid = create_grid(Nx, Ny, xlims, ylims)
+    operators = get_operators(grid)
+    force = create_body_force(bodyforce_u, bodyforce_v, grid)
+    (; grid, operators, force, viscosity)
 end

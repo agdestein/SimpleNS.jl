@@ -50,10 +50,10 @@ function real_time_plot(
         isnothing(sleeptime) || sleep(sleeptime)
         (V, p, t) = $(o.state)
         if fieldname == :velocity
-            up, vp = get_velocity(V, t, setup)
+            up, vp = get_velocity(V, setup)
             map((u, v) -> √sum(u^2 + v^2), up, vp)
         elseif fieldname == :vorticity
-            get_vorticity(V, t, setup)
+            get_vorticity(V, setup)
         elseif fieldname == :pressure
             error("Not implemented")
             reshape(copy(p), length(xp), length(yp))

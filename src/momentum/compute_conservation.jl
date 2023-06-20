@@ -1,9 +1,9 @@
 """
-    compute_conservation(V, t, setup)
+    compute_conservation(V, setup)
 
 Compute mass, momentum and energy conservation properties of velocity field.
 """
-function compute_conservation(V, t, setup)
+function compute_conservation(V, setup)
     (; grid, operators) = setup
     (; indu, indv, Ω, x, y, xp, yp, hx, hy, gx, gy) = grid
     (; M) = operators

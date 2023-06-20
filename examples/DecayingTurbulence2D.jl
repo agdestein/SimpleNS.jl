@@ -19,6 +19,7 @@ end                                                 #src
 # plotting), but does not work when building this example on GitHub.
 # `CairoMakie` makes high-quality static vector-graphics plots.
 
+using CUDA
 using FFTW
 #md using CairoMakie
 using GLMakie #!md
@@ -29,24 +30,21 @@ using LinearAlgebra
 # Case name for saving results
 name = "DecayingTurbulence2D"
 
-# Viscosity model
-viscosity_model = LaminarModel(; Re = 1e4)
-
 # A 2D grid is a Cartesian product of two vectors
-n = 200
-x = LinRange(0.0, 1.0, n + 1)
-y = LinRange(0.0, 1.0, n + 1)
-plot_grid(x, y)
+Nx = 256
+Ny = 256
+xlims = (0.0, 1.0)
+ylims = (0.0, 1.0)
+
+# Viscosity
+Re = 1e4
+viscosity = 1 / Re
 
 # Build setup and assemble operators
-setup = Setup(x, y; viscosity_model);
-
-# Since the grid is uniform and identical for x and y, we may use a specialized
-# Fourier pressure solver
-pressure_solver = FourierPressureSolver(setup);
+setup = get_setup(Nx, Ny, xlims, ylims; viscosity);
 
 # Initial conditions
-K = n ÷ 2
+K = Nx ÷ 2
 A = 1e6
 σ = 30
 ## σ = 10
@@ -73,25 +71,23 @@ p = zero(f)
 (; Ω) = setup.grid;
 (; G, M) = setup.operators;
 f = M * V;
-Δp = pressure_poisson(pressure_solver, f);
+Δp = pressure_poisson(setup, f);
 V .-= (G * Δp ./  Ω);
-p = pressure_additional_solve(pressure_solver, V, p, 0.0, setup);
+p = pressure_additional_solve(setup, V, p);
 
 V₀, p₀ = V, p
 
-# Time interval
-t_start, t_end = tlims = (0.0, 0.2)
-
 # Iteration processors
 logger = Logger()
-observer = StateObserver(1, V₀, p₀, t_start)
+observer = StateObserver(1, V₀, p₀, 0.0)
 writer = VTKWriter(; nupdate = 10, dir = "output/$name", filename = "solution")
-## processors = [logger, observer, writer]
+# processors = [logger, observer, writer]
+processors = [logger, writer]
 # processors = [logger, observer]
-processors = [logger]
+# processors = [logger]
 
 # Real time plot
-rtp = real_time_plot(observer, setup)
+rtp = real_time_plot(observer, setup; type = heatmap)
 
 # Plot energy history
 (; Ωp) = setup.grid
@@ -126,21 +122,7 @@ axislegend(ax)
 espec
 
 # Solve unsteady problem
-problem = UnsteadyProblem(setup, V₀, p₀, (0.0, 0.1));
-# problem = UnsteadyProblem(setup, V, p, tlims);
-@time solve(
-    problem,
-    RK44();
-    Δt = 0.001,
-    processors,
-    # pressure_solver = DirectPressureSolver(setup), # 4.2
-    # pressure_solver = CGPressureSolver(setup;
-    #     abstol = 10^-10,
-    #     reltol = 10^-8,
-    #     maxiter = 10,
-    # ), # 3.0
-    pressure_solver = FourierPressureSolver(setup), # 2.44
-);
+V, p = solve(V₀, p₀, (0.0, 1.0); setup, Δt = 0.0005, processors);
 
 # Real time plot
 rtp
@@ -156,13 +138,13 @@ espec
 # We may visualize or export the computed fields `(V, p)`
 
 # Export to VTK
-save_vtk(V, p, t_end, setup, "output/solution")
+save_vtk(V, p, setup, "output/solution")
 
 # Plot pressure
 plot_pressure(setup, p)
 
 # Plot velocity
-plot_velocity(setup, V, t_end)
+plot_velocity(setup, V)
 
 # Plot vorticity
-plot_vorticity(setup, V, t_end)
+plot_vorticity(setup, V)

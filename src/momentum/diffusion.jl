@@ -1,18 +1,11 @@
 """
-    diffusion!(model, V, setup; get_jacobian = false)
+    diffusion(V, setup)
 
-Evaluate diffusive terms `d` and optionally Jacobian `∇d = ∂d/∂V` using viscosity model `model`.
+Evaluate diffusive terms.
 """
-function diffusion(::LaminarModel, V, setup; get_jacobian = false)
-    (; Diff) = setup.operators
+function diffusion(V, setup)
+    (; operators, viscosity) = setup
+    (; Diff) = operators
 
-    d = Diff * V
-
-    if get_jacobian
-        ∇d = Diff
-    else
-        ∇d = nothing
-    end
-
-    d, ∇d
+    viscosity .* (Diff * V)
 end

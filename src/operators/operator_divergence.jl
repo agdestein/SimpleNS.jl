@@ -88,8 +88,24 @@ function operator_divergence(grid)
         @warn "Pressure matrix: not all rowsums are zero!"
     end
 
+    Δx = hx[1]
+    Δy = hy[1]
+
+    # Fourier transform of the discretization
+    # Assuming uniform grid, although Δx, Δy and Δz do not need to be the same
+    i = 0:(Npx-1)
+    j = reshape(0:(Npy-1), 1, :)
+
+    # Scale with Δx*Δy, since we solve the PDE in integrated form
+    Ahat = @. 4 * Δx * Δy * (sin(i * π / Npx)^2 / Δx^2 + sin(j * π / Npy)^2 / Δy^2)
+
+    # Pressure is determined up to constant, fix at 0
+    Ahat[1] = 1
+
+    Ahat = complex(Ahat)
+
     ## Group operators
-    operators = (; M, G, Bup, Bvp, A)
+    operators = (; M, G, Bup, Bvp, A, Ahat)
 
     operators
 end

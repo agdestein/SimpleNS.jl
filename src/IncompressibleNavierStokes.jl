@@ -20,17 +20,10 @@ using Makie
 const ⊗ = kron
 
 # Grid
-include("grid/grid.jl")
+include("grid/create_grid.jl")
 include("grid/stretched_grid.jl")
 include("grid/cosine_grid.jl")
-include("grid/max_size.jl")
 
-# Models
-include("models/viscosity_models.jl")
-
-# Types
-include("force/force.jl")
-include("operators/operators.jl")
 include("setup.jl")
 
 # Boundary condtions
@@ -44,25 +37,22 @@ include("operators/operator_convection_diffusion.jl")
 include("operators/operator_divergence.jl")
 include("operators/operator_interpolation.jl")
 include("operators/operator_postprocessing.jl")
+include("operators/operators.jl")
 
-# Pressure solvers
-include("solvers/pressure/pressure_solvers.jl")
-include("solvers/pressure/pressure_poisson.jl")
-include("solvers/pressure/pressure_additional_solve.jl")
+# Body force
+include("create_body_force.jl")
+
+# Pressure solver
+include("solvers/pressure_poisson.jl")
+include("solvers/pressure_additional_solve.jl")
 
 # Time steppers
-include("time_steppers/methods.jl")
+include("time_steppers/runge_kutta_method.jl")
 include("time_steppers/tableaux.jl")
-include("time_steppers/nstage.jl")
-include("time_steppers/time_steppers.jl")
-include("time_steppers/change_time_stepper.jl")
 include("time_steppers/step.jl")
-include("time_steppers/isexplicit.jl")
-include("time_steppers/needs_startup_method.jl")
-include("time_steppers/lambda_max.jl")
 
 # Preprocess
-include("preprocess/create_initial_conditions.jl")
+include("create_initial_conditions.jl")
 
 # Processors
 include("processors/processors.jl")
@@ -72,19 +62,12 @@ include("processors/finalize.jl")
 include("processors/real_time_plot.jl")
 
 # Momentum equation
-include("momentum/bodyforce.jl")
 include("momentum/compute_conservation.jl")
-include("momentum/convection_components.jl")
 include("momentum/convection.jl")
 include("momentum/diffusion.jl")
 include("momentum/momentum.jl")
 
-# Problems
-include("problems/problems.jl")
-include("problems/is_steady.jl")
-
 # Solvers
-include("solvers/get_timestep.jl")
 include("solvers/solve.jl")
 
 # Utils
@@ -103,29 +86,21 @@ include("postprocess/save_vtk.jl")
 # Reexport
 export @pack!
 
-# Force
-export SteadyBodyForce, UnsteadyBodyForce
-
-# Models
-export LaminarModel
-
 # Processors
 export AbstractProcessor, Logger, StateObserver, VTKWriter
 export initialize!, process!, finalize!
 export real_time_plot
 
 # Setup
-export Grid, Operators, Setup
+export get_grid, get_operators, get_setup
 
 # 1D grids
 export stretched_grid, cosine_grid
 
 # Pressure solvers
-export DirectPressureSolver, CGPressureSolver, FourierPressureSolver
 export pressure_poisson, pressure_additional_solve
 
 # Problems
-export SteadyStateProblem, UnsteadyProblem, is_steady
 export solve
 export momentum
 
@@ -138,12 +113,8 @@ export plot_force,
     plot_vorticity,
     save_vtk
 
-# ODE methods
-
-export AdamsBashforthCrankNicolsonMethod, OneLegMethod
-
 # Runge Kutta methods
-export ExplicitRungeKuttaMethod, ImplicitRungeKuttaMethod, runge_kutta_method
+export runge_kutta_method
 
 # Explicit Methods
 export FE11, SSP22, SSP42, SSP33, SSP43, SSP104, rSSPs2, rSSPs3, Wray3, RK56, DOPRI6
