@@ -8,13 +8,22 @@ function convection(V, Φ, setup)
     (; Cux, Cuy, Cvx, Cvy) = operators
     (; Au_ux, Au_uy, Av_vx, Av_vy) = operators
     (; Iu_ux, Iv_uy, Iu_vx, Iv_vy) = operators
-    (; indu, indv) = grid
+    # (; indu, indv) = grid
+    (; Nx, Ny) = grid
 
-    u = @view V[indu]
-    v = @view V[indv]
+    u, v = eachslice(reshape(V, Nx, Ny, 2); dims = 3)
+    ϕ, ψ = eachslice(reshape(Φ, Nx, Ny, 2); dims = 3)
 
-    ϕ = @view Φ[indu]
-    ψ = @view Φ[indv]
+    u = reshape(u, :)
+    v = reshape(v, :)
+    ϕ = reshape(ϕ, :)
+    ψ = reshape(ψ, :)
+
+    # u = V[indu]
+    # v = V[indv]
+
+    # ϕ = Φ[indu]
+    # ψ = Φ[indv]
 
     # Convection components
     u_ux = Au_ux * u                         # u at ux

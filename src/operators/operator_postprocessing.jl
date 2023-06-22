@@ -4,6 +4,8 @@
 Construct postprocessing operators such as vorticity.
 """
 function operator_postprocessing(grid)
+    T = eltype(grid.x)
+
     (; Nx, Ny, gxd, gyd) = grid
 
     # For entirely periodic BC, covering entire mesh
@@ -18,7 +20,7 @@ function operator_postprocessing(grid)
         0 => diag[1:(end-1)],
         Nx - 1 => -diag[[end - 1]],
     )
-    repeat_x = spdiagm(Nx + 1, Nx, -Nx => [1], 0 => ones(Nx))
+    repeat_x = spdiagm(Nx + 1, Nx, -Nx => [1], 0 => ones(T, Nx))
 
     # du/dy, like Su_uy
     diag = 1 ./ gyd
@@ -30,7 +32,7 @@ function operator_postprocessing(grid)
         0 => diag[1:(end-1)],
         Ny - 1 => -diag[[end - 1]],
     )
-    repeat_y = spdiagm(Ny + 1, Ny, -Ny => [1], 0 => ones(Ny))
+    repeat_y = spdiagm(Ny + 1, Ny, -Ny => [1], 0 => ones(T, Ny))
 
     # Extend to 2D
     Wu_uy = ∂y ⊗ repeat_x

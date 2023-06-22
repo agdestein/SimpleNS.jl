@@ -10,6 +10,8 @@ function create_grid(Nx, Ny, xlims, ylims)
     Δx = (xlims[2] - xlims[1]) / Nx
     Δy = (ylims[2] - ylims[1]) / Ny
 
+    T = typeof(Δx)
+
     # Pressure positions
     xp = (x[1:(end-1)] + x[2:end]) / 2
     yp = (y[1:(end-1)] + y[2:end]) / 2
@@ -87,7 +89,7 @@ function create_grid(Nx, Ny, xlims, ylims)
 
     # Matrix to map from Nvx_t-1 to Nux_in points
     # (used in interpolation, convection_diffusion, viscosity)
-    Bvux = spdiagm(Nux_in, Nvx_t - 1, diagpos => ones(Nux_in))
+    Bvux = spdiagm(Nux_in, Nvx_t - 1, diagpos => ones(T, Nux_in))
 
     ## Y-direction
 
@@ -109,7 +111,7 @@ function create_grid(Nx, Ny, xlims, ylims)
 
     # Matrix to map from Nuy_t-1 to Nvy_in points
     # (used in interpolation, convection_diffusion)
-    Buvy = spdiagm(Nvy_in, Nuy_t - 1, diagpos => ones(Nvy_in))
+    Buvy = spdiagm(Nvy_in, Nuy_t - 1, diagpos => ones(T, Nvy_in))
 
     ##
     # Volume (area) of pressure control volumes
@@ -136,18 +138,18 @@ function create_grid(Nx, Ny, xlims, ylims)
     Ω = [Ωu; Ωv]
 
     # Metrics that can be useful for initialization:
-    xu = ones(1, Nuy_in) ⊗ xin
-    yu = yp ⊗ ones(Nux_in)
+    xu = ones(T, 1, Nuy_in) ⊗ xin
+    yu = yp ⊗ ones(T, Nux_in)
     xu = reshape(xu, Nux_in, Nuy_in)
     yu = reshape(yu, Nux_in, Nuy_in)
 
-    xv = ones(1, Nvy_in) ⊗ xp
-    yv = yin ⊗ ones(Nvx_in)
+    xv = ones(T, 1, Nvy_in) ⊗ xp
+    yv = yin ⊗ ones(T, Nvx_in)
     xv = reshape(xv, Nvx_in, Nvy_in)
     yv = reshape(yv, Nvx_in, Nvy_in)
 
-    xpp = ones(Ny) ⊗ xp
-    ypp = yp ⊗ ones(Nx)
+    xpp = ones(T, Ny) ⊗ xp
+    ypp = yp ⊗ ones(T, Nx)
     xpp = reshape(xpp, Nx, Ny)
     ypp = reshape(ypp, Nx, Ny)
 

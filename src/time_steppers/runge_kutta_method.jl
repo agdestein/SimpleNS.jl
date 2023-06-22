@@ -12,7 +12,7 @@ function runge_kutta_method(A, b, c, r)
 
     # T = promote_type(eltype(A), eltype(b), eltype(c), typeof(r))
     # TODO: Find where to pass T
-    T = Float64
+    T = Float32
     A = convert(Matrix{T}, A)
     b = convert(Vector{T}, b)
     c = convert(Vector{T}, c)

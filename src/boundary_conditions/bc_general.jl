@@ -13,7 +13,7 @@ where `Btemp = Bb/(Bbc*Bb)`.
 can be scalars or vectors with either the value or the derivative (ghost) points on
 boundary/grid lines
 """
-function bc_general(Nt, Nin, Nb)
+function bc_general(T, Nt, Nin, Nb)
     if Nt != Nin + Nb
         error("Number of inner points plus boundary points is not equal to total points")
     end
@@ -21,16 +21,16 @@ function bc_general(Nt, Nin, Nb)
     # @show Nt Nin Nb
 
     # Boundary conditions
-    Bbc = spzeros(Nb, Nt)
+    Bbc = spzeros(T, Nb, Nt)
 
     if Nb == 0
         # No boundary points, so simply diagonal matrix without boundary contribution
         B1D = I(Nt)
-        Btemp = spzeros(Nt, 2)
+        Btemp = spzeros(T, Nt, 2)
     elseif Nb ∈ (1, 2)
         if Nb == 1
             # One boundary point
-            Bb = spzeros(Nt, Nb)
+            Bb = spzeros(T, Nt, Nb)
             diagpos = -1
             diagpos = 0
             Bbc[1, 1] = -1
@@ -40,12 +40,12 @@ function bc_general(Nt, Nin, Nb)
             diagpos = 0
 
             # Boundary matrices
-            Bin = spdiagm(Nt, Nin, diagpos => ones(Nin))
+            Bin = spdiagm(Nt, Nin, diagpos => ones(T, Nin))
         elseif Nb == 2
             # Normal situation, 2 boundary points
             # Boundary matrices
-            Bin = spdiagm(Nt, Nin, -1 => ones(Nin))
-            Bb = spzeros(Nt, Nb)
+            Bin = spdiagm(Nt, Nin, -1 => ones(T, Nin))
+            Bb = spzeros(T, Nt, Nb)
             Bb[1, 1] = 1
             Bb[end, Nb] = 1
 

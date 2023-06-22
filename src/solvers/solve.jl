@@ -47,7 +47,8 @@ function solve(
 
     for i = 1:nstep
         # Perform a single time step with the time integration method
-        stepper = step(stepper, Δt)
+        # stepper = step(stepper, Δt)
+        stepper = step_rk4(stepper, Δt)
 
         # Process iteration results with each processor
         for ps ∈ processors

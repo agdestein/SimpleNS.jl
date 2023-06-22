@@ -4,6 +4,8 @@
 Construct convection and diffusion operators.
 """
 function operator_convection_diffusion(grid)
+    T = eltype(grid.x)
+
     (; Nx, Ny) = grid
     (; Nux_in, Nux_b, Nux_t, Nuy_in, Nuy_b, Nuy_t) = grid
     (; Nvx_in, Nvx_b, Nvx_t, Nvy_in, Nvy_b, Nvy_t) = grid
@@ -13,13 +15,13 @@ function operator_convection_diffusion(grid)
     ## Convection (differencing) operator Cu
 
     # Calculates difference from pressure points to velocity points
-    diag1 = ones(Nux_t - 2)
+    diag1 = ones(T, Nux_t - 2)
     D1D = spdiagm(Nux_t - 2, Nux_t - 1, 0 => -diag1, 1 => diag1)
     Cux = I(Nuy_in) ⊗ D1D
     Dux = Diagonal(hyi) ⊗ D1D
 
     # Calculates difference from corner points to velocity points
-    diag1 = ones(Nuy_t - 2)
+    diag1 = ones(T, Nuy_t - 2)
     D1D = spdiagm(Nuy_t - 2, Nuy_t - 1, 0 => -diag1, 1 => diag1)
     Cuy = D1D ⊗ I(Nux_in)
     Duy = D1D ⊗ Diagonal(gxi)
@@ -30,13 +32,13 @@ function operator_convection_diffusion(grid)
     ## Convection (differencing) operator Cv
 
     # Calculates difference from pressure points to velocity points
-    diag1 = ones(Nvx_t - 2)
+    diag1 = ones(T, Nvx_t - 2)
     D1D = spdiagm(Nvx_t - 2, Nvx_t - 1, 0 => -diag1, 1 => diag1)
     Cvx = I(Nvy_in) ⊗ D1D
     Dvx = Diagonal(gyi) ⊗ D1D
 
     # Calculates difference from corner points to velocity points
-    diag1 = ones(Nvy_t - 2)
+    diag1 = ones(T, Nvy_t - 2)
     D1D = spdiagm(Nvy_t - 2, Nvy_t - 1, 0 => -diag1, 1 => diag1)
     Cvy = D1D ⊗ I(Nvx_in)
     Dvy = D1D ⊗ Diagonal(hxi)
@@ -51,7 +53,7 @@ function operator_convection_diffusion(grid)
     S1D = spdiagm(Nux_t - 1, Nux_t, 0 => -diag1, 1 => diag1)
 
     # Boundary conditions
-    Su_ux_bc = bc_general(Nux_t, Nux_in, Nux_b)
+    Su_ux_bc = bc_general(T, Nux_t, Nux_in, Nux_b)
 
     # Extend to 2D
     Su_ux = I(Ny) ⊗ (S1D * Su_ux_bc.B1D)
@@ -61,7 +63,7 @@ function operator_convection_diffusion(grid)
     S1D = spdiagm(Nuy_t - 1, Nuy_t, 0 => -diag1, 1 => diag1)
 
     # Boundary conditions
-    Su_uy_bc = bc_diff_stag(Nuy_t, Nuy_in, Nuy_b)
+    Su_uy_bc = bc_diff_stag(T, Nuy_t, Nuy_in, Nuy_b)
 
     # Extend to 2D
     Su_uy = (S1D * Su_uy_bc.B1D) ⊗ I(Nux_in)
@@ -73,7 +75,7 @@ function operator_convection_diffusion(grid)
     S1D = spdiagm(Nvx_t - 1, Nvx_t, 0 => -diag1, 1 => diag1)
 
     # Boundary conditions
-    Sv_vx_bc = bc_diff_stag(Nvx_t, Nvx_in, Nvx_b)
+    Sv_vx_bc = bc_diff_stag(T, Nvx_t, Nvx_in, Nvx_b)
 
     # Extend to 2D
     Sv_vx = I(Nvy_in) ⊗ (S1D * Sv_vx_bc.B1D)
@@ -83,7 +85,7 @@ function operator_convection_diffusion(grid)
     S1D = spdiagm(Nvy_t - 1, Nvy_t, 0 => -diag1, 1 => diag1)
 
     # Boundary conditions
-    Sv_vy_bc = bc_general(Nvy_t, Nvy_in, Nvy_b)
+    Sv_vy_bc = bc_general(T, Nvy_t, Nvy_in, Nvy_b)
 
     # Extend to 2D
     Sv_vy = (S1D * Sv_vy_bc.B1D) ⊗ I(Nx)

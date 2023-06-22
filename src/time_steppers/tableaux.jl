@@ -642,12 +642,12 @@ end
 
 Classical fourth order.
 """
-function RK44(; kwargs...)
+function RK44()
     A = [0 0 0 0; 1//2 0 0 0; 0 1//2 0 0; 0 0 1 0]
     b = [1 // 6, 1 // 3, 1 // 3, 1 // 6]
     c = sum(eachcol(A))
     r = 0
-    runge_kutta_method(A, b, c, r; kwargs...)
+    runge_kutta_method(A, b, c, r)
 end
 
 """

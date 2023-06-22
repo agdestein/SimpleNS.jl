@@ -10,8 +10,8 @@ Create 2D setup.
 """
 function get_setup(
     Nx, Ny, xlims, ylims;
-    bodyforce_u = (x, y) -> 0.0,
-    bodyforce_v = (x, y) -> 0.0,
+    bodyforce_u = (x, y) -> 0,
+    bodyforce_v = (x, y) -> 0,
     viscosity = 1 / 1000,
 )
     grid = create_grid(Nx, Ny, xlims, ylims)

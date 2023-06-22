@@ -30,14 +30,17 @@ using LinearAlgebra
 # Case name for saving results
 name = "DecayingTurbulence2D"
 
+# Floating point type
+T = Float32
+
 # A 2D grid is a Cartesian product of two vectors
 Nx = 256
 Ny = 256
-xlims = (0.0, 1.0)
-ylims = (0.0, 1.0)
+xlims = (T(0), T(1))
+ylims = (T(0), T(1))
 
 # Viscosity
-Re = 1e4
+Re = T(1000)
 viscosity = 1 / Re
 
 # Build setup and assemble operators
@@ -45,16 +48,16 @@ setup = get_setup(Nx, Ny, xlims, ylims; viscosity);
 
 # Initial conditions
 K = Nx ÷ 2
-A = 1e6
-σ = 30
+A = T(1e6)
+σ = T(30)
 ## σ = 10
 s = 5
 function create_spectrum(K)
     a =
         A * [
-            1 / sqrt((2π)^2 * 2σ^2) *
+            1 / sqrt((2T(π))^2 * 2σ^2) *
             exp(-((i - s)^2 + (j - s)^2) / 2σ^2) *
-            exp(-2π * im * rand()) for i = 1:K, j = 1:K
+            exp(-2T(π) * im * rand(T)) for i = 1:K, j = 1:K
         ]
     [
         a reverse(a; dims = 2)
@@ -72,19 +75,19 @@ p = zero(f)
 (; G, M) = setup.operators;
 f = M * V;
 Δp = pressure_poisson(setup, f);
-V .-= (G * Δp ./  Ω);
+V .-= (G * Δp ./ Ω);
 p = pressure_additional_solve(setup, V, p);
 
 V₀, p₀ = V, p
 
 # Iteration processors
 logger = Logger()
-observer = StateObserver(1, V₀, p₀, 0.0)
-writer = VTKWriter(; nupdate = 10, dir = "output/$name", filename = "solution")
+observer = StateObserver(1, V₀, p₀, T(0))
+# writer = VTKWriter(; nupdate = 10, dir = "output/$name", filename = "solution")
 # processors = [logger, observer, writer]
-processors = [logger, writer]
+# processors = [logger, writer]
 # processors = [logger, observer]
-# processors = [logger]
+processors = [logger]
 
 # Real time plot
 rtp = real_time_plot(observer, setup; type = heatmap)
@@ -122,7 +125,20 @@ axislegend(ax)
 espec
 
 # Solve unsteady problem
-V, p = solve(V₀, p₀, (0.0, 1.0); setup, Δt = 0.0005, processors);
+@time V, p = solve(V₀, p₀, (0.0f0, 0.1f0); setup, Δt = 0.0005f0, processors);
+
+# 5.536097 seconds (2.53 M allocations: 22.054 GiB, 4.61% gc time)
+
+@time V, p = solve(
+    cu(V₀),
+    cu(p₀),
+    (0.0f0, 0.1f0);
+    setup = cu(setup),
+    Δt = 0.0005f0,
+    processors,
+);
+
+# 1.160280 seconds (1.55 M allocations: 50.889 MiB, 80.38% gc time)
 
 # Real time plot
 rtp
