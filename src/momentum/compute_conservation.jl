@@ -5,14 +5,14 @@ Compute mass, momentum and energy conservation properties of velocity field.
 """
 function compute_conservation(V, setup)
     (; grid, operators) = setup
-    (; indu, indv, Ω, x, y, xp, yp, hx, hy, gx, gy) = grid
+    (; indu, indv, Ω) = grid
     (; M) = operators
 
-    uₕ = @view V[indu]
-    vₕ = @view V[indv]
+    uₕ = V[indu]
+    vₕ = V[indv]
 
-    Ωu = @view Ω[indu]
-    Ωv = @view Ω[indv]
+    Ωu = Ω[indu]
+    Ωv = Ω[indv]
 
     # Check if new velocity field is divergence free (mass conservation)
     maxdiv = maximum(abs.(M * V))

@@ -72,6 +72,8 @@ include("solvers/solve.jl")
 
 # Utils
 include("utils/get_lims.jl")
+include("utils/filter.jl")
+include("utils/plotmat.jl")
 
 # Postprocess
 include("postprocess/get_velocity.jl")
@@ -92,7 +94,7 @@ export initialize!, process!, finalize!
 export real_time_plot
 
 # Setup
-export get_grid, get_operators, get_setup
+export create_grid, get_operators, get_setup
 
 # 1D grids
 export stretched_grid, cosine_grid
@@ -104,23 +106,22 @@ export pressure_poisson, pressure_additional_solve
 export solve
 export momentum
 
-export create_initial_conditions, get_velocity
+export create_initial_conditions, random_field, get_velocity
+export create_data
 
-export plot_force,
-    plot_grid,
-    plot_pressure,
-    plot_velocity,
-    plot_vorticity,
-    save_vtk
+export spectral_cutoff,
+    create_top_hat_pressure, create_top_hat_velocity, apply_matrix
+export plotmat
+
+export plot_force, plot_grid, plot_pressure, plot_velocity, plot_vorticity, save_vtk
+
+
 
 # Runge Kutta methods
 export runge_kutta_method
 
 # Explicit Methods
 export FE11, SSP22, SSP42, SSP33, SSP43, SSP104, rSSPs2, rSSPs3, Wray3, RK56, DOPRI6
-
-# Implicit Methods
-export BE11, SDIRK34, ISSPm2, ISSPs3
 
 # Half explicit methods
 export HEM3, HEM3BS, HEM5

@@ -99,14 +99,12 @@ function step_rk4(stepper, Δt)
 
     ΔV = k₁ / 2
     
-    # Divergence of intermediate velocity field
-    f = M * ΔV
-
     # Solve the Poisson equation, but not for the first step if the boundary conditions are steady
     Δp = pₙ
 
     # Make velocity increment divergence free
-    ΔV = ΔV - G * Δp
+    GΔp = G * Δp
+    ΔV = @. ΔV - GΔp / Ω / 2
 
     # Update velocity current stage, which is now divergence free
     V = @. Vₙ + Δtₙ * ΔV
@@ -126,7 +124,8 @@ function step_rk4(stepper, Δt)
     Δp = pressure_poisson(setup, f)
 
     # Make velocity increment divergence free
-    ΔV = ΔV - G * Δp
+    GΔp = G * Δp
+    ΔV = @. ΔV - GΔp / Ω
 
     # Update velocity current stage, which is now divergence free
     V = @. Vₙ + Δtₙ * ΔV
@@ -146,7 +145,8 @@ function step_rk4(stepper, Δt)
     Δp = pressure_poisson(setup, f)
 
     # Make velocity increment divergence free
-    ΔV = ΔV - G * Δp
+    GΔp = G * Δp
+    ΔV = @. ΔV - GΔp / Ω
 
     # Update velocity current stage, which is now divergence free
     V = @. Vₙ + Δtₙ * ΔV
@@ -157,7 +157,7 @@ function step_rk4(stepper, Δt)
     F = momentum(V, V, p, setup; nopressure = true)
     k₄ = F ./ Ω
 
-    ΔV = k₁ / 6 + k₂ / 3 + k₃ / 3 + k₄ / 6
+    ΔV = @. k₁ / 6 + k₂ / 3 + k₃ / 3 + k₄ / 6
     
     # Divergence of intermediate velocity field
     f = M * ΔV
@@ -166,7 +166,8 @@ function step_rk4(stepper, Δt)
     Δp = pressure_poisson(setup, f)
 
     # Make velocity increment divergence free
-    ΔV = ΔV - G * Δp
+    GΔp = G * Δp
+    ΔV = @. ΔV - GΔp / Ω
 
     # Update velocity current stage, which is now divergence free
     V = @. Vₙ + Δtₙ * ΔV

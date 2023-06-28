@@ -6,14 +6,19 @@ Get velocity values at pressure points. Interpolate velocities to pressure posit
 """
 function get_velocity(V, setup)
     (; grid, operators) = setup
-    (; Npx, Npy, indu, indv) = grid
+    (; Npx, Npy, Nx, Ny) = grid
     (; Au_ux, Av_vy, Bup, Bvp) = operators
 
-    uh = @view V[indu]
-    vh = @view V[indv]
+    u, v = eachslice(reshape(V, Nx, Ny, 2); dims = 3)
 
-    up = reshape(Bup * (Au_ux * uh), Npx, Npy)
-    vp = reshape(Bvp * (Av_vy * vh), Npx, Npy)
+    u = reshape(u, :)
+    v = reshape(v, :)
+
+    # u = V[indu]
+    # v = V[indv]
+
+    up = reshape(Bup * (Au_ux * u), Npx, Npy)
+    vp = reshape(Bvp * (Av_vy * v), Npx, Npy)
 
     up, vp
 end

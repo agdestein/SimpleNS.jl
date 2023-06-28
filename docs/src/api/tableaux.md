@@ -21,15 +21,6 @@ RK56
 DOPRI6
 ```
 
-## Implicit Methods
-
-```@docs
-BE11
-SDIRK34
-ISSPm2
-ISSPs3
-```
-
 ## Half explicit methods
 
 ```@docs

@@ -3,7 +3,12 @@
 
 Create nonuniform Cartesian box mesh `x` × `y`.
 """
-function create_grid(Nx, Ny, xlims, ylims)
+function create_grid(N, lims)
+    Nx = N
+    Ny = N
+    xlims = lims
+    ylims = lims
+
     x = LinRange(xlims..., Nx + 1)
     y = LinRange(ylims..., Ny + 1)
 
@@ -160,6 +165,8 @@ function create_grid(Nx, Ny, xlims, ylims)
     indp = NV .+ (1:Np)
 
     (;
+        N,
+        lims,
         xlims,
         ylims,
         Nx,

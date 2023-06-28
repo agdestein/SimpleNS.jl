@@ -34,8 +34,9 @@ name = "DecayingTurbulence2D"
 T = Float32
 
 # A 2D grid is a Cartesian product of two vectors
-Nx = 256
-Ny = 256
+n = 2^11
+Nx = n
+Ny = n
 xlims = (T(0), T(1))
 ylims = (T(0), T(1))
 
@@ -48,46 +49,23 @@ setup = get_setup(Nx, Ny, xlims, ylims; viscosity);
 
 # Initial conditions
 K = Nx ÷ 2
-A = T(1e6)
-σ = T(30)
-## σ = 10
-s = 5
-function create_spectrum(K)
-    a =
-        A * [
-            1 / sqrt((2T(π))^2 * 2σ^2) *
-            exp(-((i - s)^2 + (j - s)^2) / 2σ^2) *
-            exp(-2T(π) * im * rand(T)) for i = 1:K, j = 1:K
-        ]
-    [
-        a reverse(a; dims = 2)
-        reverse(a; dims = 1) reverse(a)
-    ]
-end
-u = real.(ifft(create_spectrum(K)))
-v = real.(ifft(create_spectrum(K)))
-V = [reshape(u, :); reshape(v, :)]
-f = setup.operators.M * V
-p = zero(f)
-
-# Make velocity field divergence free
-(; Ω) = setup.grid;
-(; G, M) = setup.operators;
-f = M * V;
-Δp = pressure_poisson(setup, f);
-V .-= (G * Δp ./ Ω);
-p = pressure_additional_solve(setup, V, p);
-
-V₀, p₀ = V, p
+V₀, p₀ = random_field(
+    setup,
+    K;
+    A = T(1e8),
+    σ = T(30),
+    ## σ = 10,
+    s = 5,
+)
 
 # Iteration processors
 logger = Logger()
 observer = StateObserver(1, V₀, p₀, T(0))
-# writer = VTKWriter(; nupdate = 10, dir = "output/$name", filename = "solution")
+# writer = VTKWriter(; nupdate = 50, dir = "output/$name", filename = "solution")
 # processors = [logger, observer, writer]
 # processors = [logger, writer]
-# processors = [logger, observer]
-processors = [logger]
+processors = [logger, observer]
+# processors = [logger]
 
 # Real time plot
 rtp = real_time_plot(observer, setup; type = heatmap)
@@ -97,7 +75,7 @@ rtp = real_time_plot(observer, setup; type = heatmap)
 _points = Point2f[]
 points = @lift begin
     V, p, t = $(observer.state)
-    up, vp = get_velocity(V, t, setup)
+    up, vp = get_velocity(V, setup)
     up = reshape(up, :)
     vp = reshape(vp, :)
     E = up' * Diagonal(Ωp) * up + vp' * Diagonal(Ωp) * vp
@@ -110,7 +88,7 @@ k = 1:(K-1)
 kk = reshape([sqrt(kx^2 + ky^2) for kx ∈ k, ky ∈ k], :)
 ehat = @lift begin
     V, p, t = $(observer.state)
-    up, vp = get_velocity(V, t, setup)
+    up, vp = get_velocity(V, setup)
     e = up .^ 2 .+ vp .^ 2
     reshape(abs.(fft(e)[k.+1, k.+1]), :)
 end
@@ -125,20 +103,20 @@ axislegend(ax)
 espec
 
 # Solve unsteady problem
-@time V, p = solve(V₀, p₀, (0.0f0, 0.1f0); setup, Δt = 0.0005f0, processors);
+@time V, p = solve(V₀, p₀, (0.0f0, 0.01f0); setup, Δt = 0.0001f0, processors);
 
-# 5.536097 seconds (2.53 M allocations: 22.054 GiB, 4.61% gc time)
+# 4.022667 seconds (100.11 k allocations: 10.514 GiB, 7.26% gc time)
 
 @time V, p = solve(
     cu(V₀),
     cu(p₀),
-    (0.0f0, 0.1f0);
+    (0.0f0, 0.01f0);
     setup = cu(setup),
-    Δt = 0.0005f0,
+    Δt = 0.00002f0,
     processors,
 );
 
-# 1.160280 seconds (1.55 M allocations: 50.889 MiB, 80.38% gc time)
+# 1.729032 seconds (1.53 M allocations: 69.427 MiB, 80.29% gc time)
 
 # Real time plot
 rtp
@@ -163,4 +141,4 @@ plot_pressure(setup, p)
 plot_velocity(setup, V)
 
 # Plot vorticity
-plot_vorticity(setup, V)
+plot_vorticity(setup, Array(V))

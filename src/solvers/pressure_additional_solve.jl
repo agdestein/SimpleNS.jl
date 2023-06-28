@@ -5,9 +5,9 @@ Do additional pressure solve. This makes the pressure compatible with the veloci
 field, resulting in same order pressure as velocity.
 """
 function pressure_additional_solve(setup, V, p)
-    (; grid, operators) = setup
-    (; Ω) = grid
-    (; M) = operators
+    (; grid, operators) = setup;
+    (; Ω) = grid;
+    (; M) = operators;
 
     # Momentum already contains G*p with the current p, we therefore effectively solve for
     # the pressure difference

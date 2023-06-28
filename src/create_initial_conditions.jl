@@ -52,3 +52,42 @@ function create_initial_conditions(
 
     V, p
 end
+
+function create_spectrum(K, A, σ, s)
+    T = typeof(A)
+    a =
+        A * [
+            1 / sqrt((2T(π))^2 * 2σ^2) *
+            exp(-((i - s)^2 + (j - s)^2) / 2σ^2) *
+            exp(-2T(π) * im * rand(T)) for i = 1:K, j = 1:K
+        ]
+    [
+        a reverse(a; dims = 2)
+        reverse(a; dims = 1) reverse(a)
+    ]
+end
+
+function random_field(
+    setup,
+    K;
+    A = convert(eltype(setup.grid.x), 1e6),
+    σ = convert(eltype(setup.grid.x), 1e6),
+    s = 5,
+    device = identity,
+)
+    (; Ω) = setup.grid
+    (; G, M) = setup.operators
+    u = real.(ifft(device(create_spectrum(K, A, σ, s))))
+    v = real.(ifft(device(create_spectrum(K, A, σ, s))))
+    V = [reshape(u, :); reshape(v, :)]
+    f = M * V
+    p = zero(f)
+
+    # Make velocity field divergence free
+    f = M * V
+    Δp = pressure_poisson(setup, f)
+    V .-= (G * Δp ./ Ω)
+    p = pressure_additional_solve(setup, V, p)
+
+    V, p
+end
